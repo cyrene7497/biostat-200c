@@ -146,8 +146,19 @@ summary(lm(Fertility ~ Agriculture + TransformedExam + Education +
                  TransformedExam:CatholicLevels + 
                  TransformedExam:Infant.Mortality, swiss2))
 ```
+Removing the one outlier improved the fit. 
 
 - Some predictions of future observations for interesting values of the predictors.
+```{r}
+set.seed(200)
+pdf <- tibble(CatholicLevels = rep(levels(swiss2$CatholicLevels), 5),
+              Agriculture = sample(swiss2$Agriculture, 15),
+              TransformedExam = sample(swiss2$TransformedExam, 15),
+              Education = sample(swiss2$Education, 15),
+              Infant.Mortality = sample(swiss2$Infant.Mortality, 15)) %>% print()
+pp <- predict(finallm2, new = pdf) %>% print()
+pdf %>% mutate(predictedFertility = pp)
+```
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
 

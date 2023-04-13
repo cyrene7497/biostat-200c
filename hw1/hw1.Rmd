@@ -22,7 +22,7 @@ sessionInfo()
 ```
 ```{r}
 library(tidyverse)
-library(faraway)
+library(gtsummary)
 ```
 ```{r}
 # Rename rows since each row is a province in Switzerland. 
@@ -53,6 +53,28 @@ for (var in c("Agriculture", "Examination", "Education", "Catholic", "Infant.Mor
 There appears to be a distinct negative trend between `Examination` (% draftees receiving highest mark on army examination) and `Fertility`. Many of the provinces have a low percentage (0-20%) of draftees who were educated beyond primary school. There seems like there might be a relationship between `Fertility` and `Education`. The percent Catholic as opposed to Protestant seems to be in two groups. Generally provinces either had very high percentage of Catholics or quite low. There are few provinces with nearly 50-50 proportion between the two religions. 
 
 - Variable selection to choose the best model.
+
+  For variable selection we start with a big model (`biglm`) that includes all two-way interactions between predictors. By step-wise regression, we minimize the AIC (Akaike Information Criterion) to get a small model (`smalllm`). 
+```{r}
+biglm <- lm(Fertility ~ (Agriculture + Examination + Education + Catholic + Infant.Mortality)^2, swiss1)
+smalllm <- step(biglm, trace = TRUE)
+drop1(smalllm, test = "F")
+```
+The F-test shows that the `Agriculture:Examination` and `Agriculture:Education` interaction terms can be dropped from the model. 
+
+So the final model is:
+```{r}
+# final model
+finallm <- lm(Fertility ~ Agriculture + Examination + Education + Catholic + 
+                Infant.Mortality + Agriculture:Infant.Mortality + 
+                Examination:Education + Examination:Infant.Mortality + 
+                Education:Catholic, swiss1)
+summary(finallm)
+finallm %>%
+  tbl_regression() %>%
+  bold_labels() %>%
+  bold_p(t = 0.05)
+```
 
 - An exploration of transformations to improve the fit of the model.
 

@@ -99,13 +99,53 @@ The transformation makes the relationship slightly more linear.
 swiss1 <- swiss1 %>%
   mutate(TransformedExam = Examination^(-.5)) %>%
   print(width = Inf)
-trfinallm <- lm(Fertility ~ Agriculture + TransformedExam + Education + Catholic + 
-                Infant.Mortality, swiss1)
-summary(trfinallm)
+trlm <- lm(Fertility ~ Agriculture + TransformedExam + Education + 
+             CatholicLevels + Infant.Mortality, swiss1)
+summary(trlm)
+```
+The fit improves with the transformed `Examination` variable. We can run the selection again with this transformation. 
+```{r}
+bigtrlm <- lm(Fertility ~ (Agriculture + TransformedExam + Education + 
+                             CatholicLevels + Infant.Mortality)^2, swiss1)
+smalltrlm <- step(bigtrlm, trace = TRUE)
+drop1(smalltrlm, test = "F")
+```
+The new final model is:
+```{r}
+finallm2 <- lm(Fertility ~ Agriculture + TransformedExam + Education + 
+                 CatholicLevels + Infant.Mortality + 
+                 Agriculture:TransformedExam +
+                 Agriculture:CatholicLevels + Agriculture:Infant.Mortality + 
+                 TransformedExam:CatholicLevels + 
+                 TransformedExam:Infant.Mortality, swiss1)
+summary(finallm2)
+finallm2 %>%
+  tbl_regression() %>%
+  bold_labels() %>%
+  bold_p(t = 0.05)
 ```
 
 
 - Diagnostics to check the assumptions of your model.
+```{r}
+plot(finallm2)
+swiss1 %>%
+  mutate(cook = cooks.distance(finallm2)) %>%
+  filter(cook >= 0.1) %>%
+  print(width = Inf)
+```
+It appears the model assumptions are generally met. The Residuals vs Fitted plot shows the residuals randomly around zero. This means we are roughly meeting the linearity and constant variance assumptions. The Normal Q-Q plot is almost linear so we've met the normality assumption as well. However, the observation of the `Moutier` province has an unusually high cook's distance of 45. We can drop it and run the model again. 
+```{r}
+swiss2 <- swiss1 %>% filter(Province != "Moutier") %>% print(width = Inf)
+```
+```{r}
+summary(lm(Fertility ~ Agriculture + TransformedExam + Education + 
+                 CatholicLevels + Infant.Mortality + 
+                 Agriculture:TransformedExam +
+                 Agriculture:CatholicLevels + Agriculture:Infant.Mortality + 
+                 TransformedExam:CatholicLevels + 
+                 TransformedExam:Infant.Mortality, swiss2))
+```
 
 - Some predictions of future observations for interesting values of the predictors.
 

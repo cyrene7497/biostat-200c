@@ -16,7 +16,7 @@ To submit homework, please submit Rmd and html files to BruinLearn by the deadli
 
 
 ## Q1. Reivew of linear models 
-### The swiss data — use Fertility as the response to practice
+### The swiss data using Fertility as the response variable
 ```{r}
 sessionInfo()
 ```
@@ -31,9 +31,15 @@ swiss1 <- swiss %>%
   print(width = Inf)
 str(swiss1)
 ```
-- An initial data analysis that explores the numerical and graphical characteristics of the data.
+#### Initial Data Analysis
+
+##### Numerical Characteristics
 ```{r}
-summary(swiss1)
+swiss1 %>% subset(select = -c(Province)) %>% 
+  tbl_summary(type = all_continuous() ~ "continuous2",
+              statistic = all_continuous() ~ 
+                c("{N_nonmiss}", "{median} ({p25}, {p75})", "{min}, {max}"),
+              digits = all_continuous() ~ 2)
 ```
 All variables are numeric besides `Province`. All except for `Fertility` are proportions of the population. `Fertility` is the common standardized fertility measure $I_g$, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). 
 ```{r}

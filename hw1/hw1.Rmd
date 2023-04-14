@@ -327,4 +327,17 @@ We see a 95% confidence interval for the log-odds of the `bmi` coefficient is gi
 
 ### Q3.8 
 
-Do women who test positive have higher diastolic blood pressures? Is the dias- tolic blood pressure significant in the regression model? Explain the distinction between the two questions and discuss why the answers are only apparently contradictory.
+Do women who test positive have higher diastolic blood pressures? Is the diastolic blood pressure significant in the regression model? Explain the distinction between the two questions and discuss why the answers are only apparently contradictory.
+```{r}
+pima1 <- pima1 %>%
+  drop_na(diastolic)
+dtm_d <- glm(test_f ~ pregnant + glucose + bmi + diabetes + age + diastolic, 
+             family = binomial, data = pima1)
+summary(dtm_d)
+ggplot(pima1, aes(x = diastolic, fill = test_f2)) +
+  geom_histogram(alpha =.5, position = "identity") +
+  ylab("Count") + xlab("Diastolic blood pressure (mm Hg)") +
+  ggtitle("Histogram of Diastolic BP by Diabetes Test Results") +
+  theme_bw()
+```
+Since the coefficient for `diastolic` in the regression model is negative, that means women with diabetes tend to have lower diastolic blood pressures. However the coefficient is nearly zero, so it seems that their diastolic blood pressures are not that different. Diastolic blood pressure is not significant in the regression model and was not selected in the previous variable selection. 

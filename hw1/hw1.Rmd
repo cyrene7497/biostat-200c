@@ -108,18 +108,18 @@ The partial residual plots look mostly linear, but we can explore transforming `
 
 #### Exploration of Transformations
 
-The previous scatterplot of `Infant.Mortality` and `Fertility` indicated that it might be helpful to transform `Infant.Mortality` down the ladder of powers. 
+The previous scatter plot of `Examination` and `Fertility` indicated that it might be helpful to transform `Examination` down the ladder of powers. 
 ```{r}
 ggplot(data = swiss1) + 
-    geom_point(mapping = aes(x = Infant.Mortality^(-.5), y = Fertility))
+    geom_point(mapping = aes(x = Examination^(-.5), y = Fertility))
 ```
-The transformation didn't improve the apparent fit much.
+The transformation seems to have made the scatterplot a little more linear.
 ```{r}
 swiss1 <- swiss1 %>%
-  mutate(TInfant.M = Infant.Mortality^(-.5)) %>%
+  mutate(TExam = Examination^(-.5)) %>%
   print(width = Inf)
-trlm <- lm(Fertility ~ Agriculture + Examination + Education + 
-             Catholic2 + TInfant.M, swiss1)
+trlm <- lm(Fertility ~ Agriculture + TExam + Education + 
+             Catholic2 + Infant.Mortality, swiss1)
 crPlots(trlm)
 ```
 The fit doesn't improve the diagnostics, so we can continue without transformations. 
@@ -134,57 +134,29 @@ lmodf %>%
 ##### Diagnostics
 ```{r}
 plot(lmodf)
-# swiss1 %>%
-#   mutate(cook = cooks.distance(lmodf)) %>%
-#   filter(cook >= 0.1) %>%
-#   print(width = Inf)
-cooks.distance(lmodf)
-```
-None of the cook's distances are high, all are lower than 0.1, so 
-```{r}
 swiss1 %>%
-  slice(c(1, 6, 19, 37, 46, 47)) %>% print(width = Inf)
-```
-
-#### Predictions 
-#### Variable Selection
-
-
-
-So the final model is:
-- Diagnostics to check the assumptions of your model.
-```{r}
-plot(finallm2)
-swiss1 %>%
-  mutate(cook = cooks.distance(finallm2)) %>%
+  mutate(cook = cooks.distance(lmodf)) %>%
   filter(cook >= 0.1) %>%
   print(width = Inf)
 ```
-It appears the model assumptions are generally met. The Residuals vs Fitted plot shows the residuals randomly around zero. This means we are roughly meeting the linearity and constant variance assumptions. The Normal Q-Q plot is almost linear so we've met the normality assumption as well. However, the observation of the `Moutier` province has an unusually high cook's distance of 45. We can drop it and run the model again. 
-```{r}
-swiss2 <- swiss1 %>% filter(Province != "Moutier") %>% print(width = Inf)
-```
-```{r}
-summary(lm(Fertility ~ Agriculture + TransformedExam + Education + 
-                 CatholicLevels + Infant.Mortality + 
-                 Agriculture:TransformedExam +
-                 Agriculture:CatholicLevels + Agriculture:Infant.Mortality + 
-                 TransformedExam:CatholicLevels + 
-                 TransformedExam:Infant.Mortality, swiss2))
-```
-Removing the one outlier improved the fit. 
+There are some observations with cook's distances higher than 0.1 but there's no clear reason why that might be the case, and no indication that they might be outliers. 
+
+#### Predictions 
 
 - Some predictions of future observations for interesting values of the predictors.
+Let's predict the fertility of a few random provinces in Switzerland with median `Agriculture`; `Examination` at the observed minimum, 1st quartile, median, 3rd quartile, and maximum; minimum `Education`; either level of `Catholic` and maximum `Infant.Mortality`.
 ```{r}
-set.seed(200)
-pdf <- tibble(CatholicLevels = rep(levels(swiss2$CatholicLevels), 5),
-              Agriculture = sample(swiss2$Agriculture, 15),
-              TransformedExam = sample(swiss2$TransformedExam, 15),
-              Education = sample(swiss2$Education, 15),
-              Infant.Mortality = sample(swiss2$Infant.Mortality, 15)) %>% print()
-pp <- predict(finallm2, new = pdf) %>% print()
-pdf %>% mutate(predictedFertility = pp)
+pdf <- tibble(Agriculture = rep(median(swiss1$Agriculture), 5),
+              Examination = c(3, 12, 16, 22, 37),
+              Education = rep(1, 5),
+              Catholic2 = c("high", "low", "high", "low", "high"),
+              Infant.Mortality = rep(26.6, 5))
+print(pdf)
+pp <- predict(lmodf, new = pdf)
+pdf %>% mutate(PredictedFertility = pp)
 ```
+It's interesting that a hypothetical province with average percentage of males involved in agriculture, maximum percentage of draftees with highest marks on army examination, lowest percentage of education beyond primary school, high percentage of Catholics, and maximum observed infant mortality has a predicted fertility that would be even higher than the Hutterites since the percent fertility is expected to be above 100%. 
+
 #### Conclusion
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)

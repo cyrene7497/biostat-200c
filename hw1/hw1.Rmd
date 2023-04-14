@@ -15,8 +15,7 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 To submit homework, please submit Rmd and html files to BruinLearn by the deadline.
 
 
-## Q1. Reivew of linear models 
-### The swiss data using Fertility as the response variable
+## Q1. Analysis of Swiss data using Fertility as the response variable
 ```{r}
 sessionInfo()
 ```
@@ -32,9 +31,9 @@ swiss1 <- swiss %>%
   print(width = Inf)
 str(swiss1)
 ```
-#### Initial Data Analysis
+### Initial Data Analysis
 
-##### Numerical Characteristics
+#### Numerical Characteristics
 ```{r}
 swiss1 %>% subset(select = -c(Province)) %>% 
   tbl_summary(type = all_continuous() ~ "continuous2",
@@ -44,7 +43,7 @@ swiss1 %>% subset(select = -c(Province)) %>%
 ```
 All variables are numeric besides `Province`. All except for `Fertility` are percentages based on proportions of the population. `Fertility` is the common standardized fertility measure $I_g$, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). `Agriculture` is the percentage of males involved in agriculture as occupation. `Examination` is the percentage of draftees receiving highest mark on army examination. `Education` is the percentage of draftees who had an education beyond primary school. `Catholic` is the percent Catholic as opposed to Protestant. `Infant.Mortality` is the percent of live births who lived less than 1 year. 
 
-##### Graphical Characteristics
+#### Graphical Characteristics
 ```{r}
 ggplot(data = swiss1) +
   geom_histogram(mapping = aes(x = Fertility)) + 
@@ -77,7 +76,7 @@ swiss1 <- swiss1 %>%
   mutate(Catholic2 = as.factor(Catholic2)) %>%
   print(width = Inf)
 ```
-#### Variable Selection
+### Variable Selection
 For variable selection we start with a big model (`biglm`) that includes all two-way interactions between predictors. By step-wise regression, we minimize the AIC (Akaike Information Criterion) to get a small model (`smalllm`). 
 ```{r}
 lmod <- lm(Fertility ~ Agriculture + Examination + Education + Catholic2 + Infant.Mortality, swiss1)
@@ -94,7 +93,7 @@ lmodf <- lm(Fertility ~ Agriculture + Examination + Education + Catholic2 +
 summary(lmodf)
 ```
 
-#### Diagnostics 
+### Diagnostics 
 ```{r}
 plot(lmodf)
 ```
@@ -106,7 +105,7 @@ crPlots(lmod)
 ```
 The partial residual plots look mostly linear, but we can explore transforming `Examination`.
 
-#### Exploration of Transformations
+### Exploration of Transformations
 
 The previous scatter plot of `Examination` and `Fertility` indicated that it might be helpful to transform `Examination` down the ladder of powers. 
 ```{r}
@@ -124,14 +123,14 @@ crPlots(trlm)
 ```
 The fit doesn't improve the diagnostics, so we can continue without transformations. 
 
-#### Final Model
+### Final Model
 ```{r}
 lmodf %>%
   tbl_regression() %>%
   bold_labels() %>%
   bold_p(t = 0.05)
 ```
-##### Diagnostics
+#### Diagnostics
 ```{r}
 plot(lmodf)
 swiss1 %>%
@@ -141,7 +140,7 @@ swiss1 %>%
 ```
 There are some observations with cook's distances higher than 0.1 but there's no clear reason why that might be the case, and no indication that they might be outliers. 
 
-#### Predictions 
+### Predictions 
 
 - Some predictions of future observations for interesting values of the predictors.
 Let's predict the fertility of a few random provinces in Switzerland with median `Agriculture`; `Examination` at the observed minimum, 1st quartile, median, 3rd quartile, and maximum; minimum `Education`; either level of `Catholic` and maximum `Infant.Mortality`.
@@ -157,17 +156,16 @@ pdf %>% mutate(PredictedFertility = pp)
 ```
 It's interesting that a hypothetical province with average percentage of males involved in agriculture, maximum percentage of draftees with highest marks on army examination, lowest percentage of education beyond primary school, high percentage of Catholics, and maximum observed infant mortality has a predicted fertility that would be even higher than the Hutterites since the percent fertility is expected to be above 100%. 
 
-#### Conclusion
-
-- An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
+### Conclusion
 
   + **BACKGROUND:** The `swiss` data comes from a study of `Swiss Fertility and Socioeconomic Indicators (1888)`. This study used a standardized fertility measure and socioeconomic indicators for each of 47 French-speaking provinces of Switzerland at about 1888 at a time when Switzerland was entering a period known as a demographic transition. Its fertility was beginning to fall from the high level typical of underdeveloped countries. 
   
   + **OBJECTIVE:** This study aimed to identify the factors influencing fertility and the observed decline in fertility in Switzerland, taking into account the variety of socioeconomic factors across the provinces.
   
-  + **METHODS:** study design (how these data were collected), outcome definitions, statistical procedures used
+  + **METHODS:** Data was collected from the Office of Population Research. A linear regression analysis was performed to explore the factors contributing to fertility. 
+  study design (how these data were collected), outcome definitions, statistical procedures used
   
-  + RESULTS: summary of major findings to address the question raised in objective
+  + **RESULTS:** summary of major findings to address the question raised in objective
   
   + CONCLUSIONS:
 

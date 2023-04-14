@@ -177,11 +177,22 @@ pdf %>% mutate(predictedFertility = pp)
 
 ### Q2.1
 
-Write down the log-likelihood function of logistic regresion for binomial responses.
+Write down the log-likelihood function of logistic regression for Bernoulli responses.
+
+Given $n$ data points $(y_i, \mathbf{x}_i)$, $i=1,\ldots,n$, the **log-likelihood** is
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_i \log \left[p_i^{y_i} (1 - p_i)^{1 - y_i}\right] \\
+&=& \sum_i \left[ y_i \log p_i + (1 - y_i) \log (1 - p_i) \right] \\
+&=& \sum_i \left[ y_i \log \frac{e^{\eta_i}}{1 + e^{\eta_i}} + (1 - y_i) \log \frac{1}{1 + e^{\eta_i}}  \right] \\
+&=& \sum_i \left[ y_i \eta_i - \log (1 + e^{\eta_i}) \right] \\
+&=& \sum_i \left[ y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - \log (1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) \right].
+\end{eqnarray*}
 
 ### Q2.2
 
-Derive the gradient vector and Hessian matrix of the log-likelhood function with respect to the regression coefficients $\boldsymbol{\beta}$. 
+Derive the gradient vector and Hessian matrix of the log-likelihood function with respect to the regression coefficients $\boldsymbol{\beta}$. 
+
+
 
 ### Q2.3
 
@@ -190,14 +201,41 @@ Show that the log-likelihood function of logistic regression is a concave functi
 ## Q3.  
 
 The National Institute of Diabetes and Digestive and Kidney Diseases conducted a study on 768 adult female Pima Indians living near Phoenix. The purpose of the study was to investigate factors related to diabetes. The data may be found in the the dataset `pima`.
+```{r}
+library(faraway)
+pima1 <- as_tibble(pima) %>%
+  print(width = Inf)
+str(pima1)
+```
 
 ### Q3.1
 
 Create a factor version of the test results and use this to produce an interleaved histogram to show how the distribution of insulin differs between those testing positive and negative. Do you notice anything unbelievable about the plot?
-
+```{r}
+pima1$test_f <- as.factor(pima1$test)
+pima1$test_f2 <- pima1$test_f
+levels(pima1$test_f2) <- c("negative", "positive")
+ggplot(pima1, aes(x = insulin, fill = test_f2)) +
+  geom_histogram(alpha =.5, position = "identity") +
+  ylab("Count") + xlab("Insulin (mu U/ml)") +
+  ggtitle("Histogram of Insulin by Diabetes Test Results") +
+  theme_bw()
+```
+It's unusual that there are so many entries of 0 Insulin, even for both positive and negative tested patients. It's impossible to have 0 insulin in the body so the zeros must be missing values. 
 ### Q3.2
 
-Replace the zero values of `insulin` with the missing value code `NA`. Recreatethe interleaved histogram plot and comment on the distribution.
+Replace the zero values of `insulin` with the missing value code `NA`. Re-create the interleaved histogram plot and comment on the distribution.
+```{r}
+pima1 <- pima1 %>%
+  mutate(insulin.na = insulin) 
+pima1$insulin.na[pima1$insulin == 0] <- NA
+ggplot(pima1, aes(x = insulin.na, fill = test_f2)) +
+  geom_histogram(alpha =.5, position = "identity") +
+  ylab("Count") + xlab("Insulin (mu U/ml)") +
+  ggtitle("Histogram of Insulin by Diabetes Test Results") +
+  theme_bw()
+```
+The peak insulin level of those who tested negative is now lower than that of those who tested positive for diabetes. The distribution of those with a negative test looks right skewed. There also looks like there might be some outliers with unusually high insulin levels. 
 
 ### Q3.3
 
@@ -215,9 +253,11 @@ Use AIC to select a model. You will need to take account of the missing val- ues
 
 Create a variable that indicates whether the case contains a missing value. Use this variable as a predictor of the test result. Is missingness associated with the test result? Refit the selected model, but now using as much of the data as reasonable. Explain why it is appropriate to do this.
 
+If not associated then it's missing associated with randomness. Then try to reserve data and do 3-5 replicates of imputations? but bc missing vector that we created is not associated with the outcome you can use complete case analysis for this problem. This leads to a smaller data set that we're workign with. It will not give you the power for your test. due to smaller sample size after deleting missing. but the effect size is still valid. bc missingness is not associated with outcome. if you get rid of the missing it still accurately reflects if you didn't delete those outcomes. refit w na.omit
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
+add BMI back in if its gone and then refer to lab. 
 
 ### Q3.8 
 

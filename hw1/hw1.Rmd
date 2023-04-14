@@ -35,11 +35,12 @@ str(swiss1)
 ```{r}
 summary(swiss1)
 ```
-All variables are numeric besides `Province`. All except for `Fertility` are proportions of the population. `Fertility` is the common standardized fertility measure _I_g_, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). 
+All variables are numeric besides `Province`. All except for `Fertility` are proportions of the population. `Fertility` is the common standardized fertility measure $I_g$, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). 
 ```{r}
 ggplot(data = swiss1) +
   geom_histogram(mapping = aes(x = Fertility)) + 
-  labs(x = "Fertility Measure", y = "Number of Provinces")
+  labs(x = "Fertility Measure", y = "Number of Provinces") + 
+  theme_bw()
 ```
 At first glance it appears that there might be some outliers of unusually low and high fertility. 
 ```{r}
@@ -192,11 +193,44 @@ Given $n$ data points $(y_i, \mathbf{x}_i)$, $i=1,\ldots,n$, the **log-likelihoo
 
 Derive the gradient vector and Hessian matrix of the log-likelihood function with respect to the regression coefficients $\boldsymbol{\beta}$. 
 
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}, x_i, y_i) &=& \sum_i \left[ y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - \log (1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) \right] \\
+\nabla_\beta(\mathbf{x}_i^T \boldsymbol{\beta}) &=& \nabla_\beta(\mathbf{x}_{i0} \beta_0 + \mathbf{x}_{i1} \beta_1 + \cdots + \mathbf{x}_{ip} \beta_p) 
+&=& \boldsymbol{\mathbf{x}_i} \\
+\nabla_\beta \ell(\cdot) &=& \sum_i y_i(\nabla_\beta \mathbf{x}_i^T \boldsymbol{\beta}) - \nabla_\beta (\log (1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}})) \\
+&=& \sum_i y_i \mathbf{x}_i - \frac{1}{1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}} \cdot e^{\mathbf{x}_i^T \boldsymbol{\beta}} \cdot \nabla_\beta \mathbf{x}_i^T \boldsymbol{\beta} \\
+&=& \sum_i y_i \mathbf{x}_i - \frac{e^{\mathbf{x}_i^T \boldsymbol{\beta}}}{1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}} \cdot \mathbf{x}_i \\
+&=& \sum_i y_i \mathbf{x}_i - \frac{1}{1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}}} \cdot \mathbf{x}_i
+\end{eqnarray*}
 
+The Hessian is the matrix of the partial derivatives of the gradient vector with respect to $\boldsymbol{\beta}$.
+
+\begin{eqnarray*}
+\nabla_\beta(\frac{\partial \ell(\cdot)}{\partial \beta_j}) &=& \sum_i \nabla_\beta(y_i x_{ij} - \frac{1}{1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}}} x_{ij}) \\
+&=& \sum_i \nabla_\beta(-x_{ij}(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{-1}) \\
+&=& \sum_i -x_{ij} \cdot -1(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{-2} e^{- \mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i \\
+&=& - \sum_i x_{ij} \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}}} \mathbf{x}_i \\
+&=& - \sum_i \begin{bmatrix}
+x_{i0} \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{2}} \mathbf{x}_i & \cdots & x_{ip} \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{2}} \mathbf{x}_i \\
+\end{bmatrix} \\
+&=& - \sum_i \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{2}} \begin{bmatrix}
+x_{i0} \mathbf{x}_i & \cdots & x_{ip} \mathbf{x}_i
+\end{bmatrix} \\
+&=& - \sum_i \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{2}} \mathbf{x}_i \begin{bmatrix}
+x_{i0} & \cdots & x_{ip}
+\end{bmatrix} \\
+&=& - \sum_i \frac{e^{- \mathbf{x}_i^T \boldsymbol{\beta}}}{(1 + e^{- \mathbf{x}_i^T \boldsymbol{\beta}})^{2}} \mathbf{x}_i \mathbf{x}_i^T = H_\beta
+\end{eqnarray*}
 
 ### Q2.3
 
 Show that the log-likelihood function of logistic regression is a concave function in regression coefficients $\boldsymbol{\beta}$. (Hint: show that the negative Hessian is a positive semidefinite matrix.)
+
+If we combine the scalar terms into a diagnoal matrix D and concatenate column vectors $x_i \in \mathbb{R}^{d}$ into a matrix $\mathbf{X}$ of size $d \times m$ such that $\sum_i^{m} \mathbf{x}_i \mathbf{x}_i^T = \mathbf{XX}^T$. The scalar terms are collected into a diagonal matrix $D$ such that $-H_\beta = XDX^T$. Let $\delta$ be any vector such that $\delta \in \mathbb{R}^{d}$. Then we can show that $\delta^T(-H_\beta)\delta \ge 0$ to show that the negative Hessian is a positive semi-definite matrix and thus the log-likelihood function of logistic regression is a concave function. 
+
+\begin{eqnarray*}
+\delta^T H \delta &=& \delta^TXDX^T\delta &=& \delta^TXD(\delta^TX)^T &=& \lVert \delta^T DX \rVert^{2} \ge 0
+\end{eqnarray*}
 
 ## Q3.  
 

@@ -203,6 +203,7 @@ Show that the log-likelihood function of logistic regression is a concave functi
 The National Institute of Diabetes and Digestive and Kidney Diseases conducted a study on 768 adult female Pima Indians living near Phoenix. The purpose of the study was to investigate factors related to diabetes. The data may be found in the the dataset `pima`.
 ```{r}
 library(faraway)
+library(tidyverse)
 pima1 <- as_tibble(pima) %>%
   print(width = Inf)
 str(pima1)
@@ -301,13 +302,27 @@ summary(missings.glm)
 Since the missing values are not associated with the diabetes test outcome, we can assume that the missing values are occurring randomly. Therefore even with a smaller sample size after omitting NAs the effect size is still valid because missingness is not associated with the outcome. 
 
 ```{r}
-
+pima1 <- pima1 %>%
+  drop_na(pregnant) %>%
+  drop_na(glucose) %>%
+  drop_na(bmi) %>%
+  drop_na(diabetes) %>%
+  drop_na(age) %>%
+  print(width = Inf)
+dtm_f <- glm(test_f ~ pregnant + glucose + bmi + diabetes + age, 
+             family = binomial, data = pima1)
+summary(dtm_f)
 ```
+As opposed to the previous fit of this model with 392 observations, this fit uses 752 observations.
 
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
 add BMI back in if its gone and then refer to lab. 
+```{r}
+
+```
+
 
 ### Q3.8 
 

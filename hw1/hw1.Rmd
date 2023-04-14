@@ -318,10 +318,11 @@ As opposed to the previous fit of this model with 392 observations, this fit use
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.
-add BMI back in if its gone and then refer to lab. 
-```{r}
 
+```{r}
+confint(dtm_f)
 ```
+We see a 95% confidence interval for the log-odds of the `bmi` coefficient is given by about $(0.05921, 0.11701)$. This corresponds to the change in log-odds for a 1-unit increase in `bmi` We want a 9.3 unit increase in BMI, so we multiply the endpoints of the interval by 9.3 to get a confidence interval of $(0.5506403, 1.088167)$. Exponentiating this result gives a confidence interval of about $(1.734363, 2.968827)$. We can be 95% confident that the odds of testing positive for diabetes for a woman with a BMI at the 3rd quartile are between 1.73 and 2.96 times higher than the odds of testing positive for diabetes for a woman with a BMI at the 1st quartile, holding all other predictors constant.
 
 
 ### Q3.8 

@@ -161,7 +161,7 @@ It's interesting that a hypothetical province with average percentage of males i
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
 
-  + BACKGROUND: brief intro of the study background, what are the existing findings
+  + **BACKGROUND:** The `swiss` data comes from a study of `Swiss Fertility and Socioeconomic Indicators (1888)`. This study used a standardized fertility measure and socioeconomic indicators for each of 47 French-speaking provinces of Switzerland at about 1888 at a time when Switzerland was entering a period known as a demographic transition. Its fertility was beginning to fall from the high level typical of underdeveloped countries. 
   
   + OBJECTIVE: state the overall purpose of your research, e.g., what kind of knowledge gap you are trying to fill in
   

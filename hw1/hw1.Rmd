@@ -340,4 +340,4 @@ ggplot(pima1, aes(x = diastolic, fill = test_f2)) +
   ggtitle("Histogram of Diastolic BP by Diabetes Test Results") +
   theme_bw()
 ```
-Since the coefficient for `diastolic` in the regression model is negative, that means women with diabetes tend to have lower diastolic blood pressures. However the coefficient is nearly zero, so it seems that their diastolic blood pressures are not that different. Diastolic blood pressure is not significant in the regression model and was not selected in the previous variable selection. 
+Since the coefficient for `diastolic` in the regression model is negative, that means women with diabetes tend to have lower diastolic blood pressures. However the coefficient is nearly zero, so it seems that their diastolic blood pressures are not that different. Diastolic blood pressure is not significant in the regression model and was not selected in the previous variable selection. This is unusual and contrary to studies that clearly link diastolic blood pressure to diabetes tests. This is likely because diastolic blood pressure is highly correlated with some of the other variables so it gets removed from the model. 

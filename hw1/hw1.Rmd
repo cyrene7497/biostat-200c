@@ -226,10 +226,8 @@ It's unusual that there are so many entries of 0 Insulin, even for both positive
 
 Replace the zero values of `insulin` with the missing value code `NA`. Re-create the interleaved histogram plot and comment on the distribution.
 ```{r}
-pima1 <- pima1 %>%
-  mutate(insulin.na = insulin) 
-pima1$insulin.na[pima1$insulin == 0] <- NA
-ggplot(pima1, aes(x = insulin.na, fill = test_f2)) +
+pima1$insulin[pima1$insulin == 0] <- NA
+ggplot(pima1, aes(x = insulin, fill = test_f2)) +
   geom_histogram(alpha =.5, position = "identity") +
   ylab("Count") + xlab("Insulin (mu U/ml)") +
   ggtitle("Histogram of Insulin by Diabetes Test Results") +
@@ -239,7 +237,26 @@ The peak insulin level of those who tested negative is now lower than that of th
 
 ### Q3.3
 
-Replace the incredible zeroes in other variables with the missing value code. Fit a model with the result of the diabetes test as the response and all the other variables as predictors. How many observations were used in the model fitting? Why is this less than the number of observations in the data frame.
+Replace the incredible zeroes in other variables with the missing value code. Fit a model with the result of the diabetes test as the response and all the other variables as predictors. How many observations were used in the model fitting? Why is this less than the number of observations in the data frame?
+```{r}
+summary(pima1)
+```
+The summary shows that `glucose`, `diastolic`, `triceps`, and `bmi`also have zero values that don't make sense. 
+```{r}
+pima1$glucose[pima1$glucose == 0] <- NA
+pima1$diastolic[pima1$diastolic == 0] <- NA
+pima1$triceps[pima1$triceps == 0] <- NA
+pima1$bmi[pima1$bmi == 0] <- NA
+summary(pima1)
+```
+```{r}
+# Diabetes Test Model
+dtm <- glm(test_f ~ pregnant + glucose + diastolic + triceps + insulin + bmi + 
+             diabetes + age,
+           family = "binomial", data = pima1)
+summary(dtm)
+```
+There were 392 observations used in the model fitting. This is different from the number of observations because 376 observations were omitted due to missingness. 
 
 ### Q3.4
 

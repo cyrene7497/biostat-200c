@@ -163,9 +163,9 @@ It's interesting that a hypothetical province with average percentage of males i
 
   + **BACKGROUND:** The `swiss` data comes from a study of `Swiss Fertility and Socioeconomic Indicators (1888)`. This study used a standardized fertility measure and socioeconomic indicators for each of 47 French-speaking provinces of Switzerland at about 1888 at a time when Switzerland was entering a period known as a demographic transition. Its fertility was beginning to fall from the high level typical of underdeveloped countries. 
   
-  + OBJECTIVE: state the overall purpose of your research, e.g., what kind of knowledge gap you are trying to fill in
+  + **OBJECTIVE:** This study aimed to identify the factors influencing fertility and the observed decline in fertility in Switzerland, taking into account the variety of socioeconomic factors across the provinces.
   
-  + METHODS: study design (how these data were collected), outcome definitions, statistical procedures used
+  + **METHODS:** study design (how these data were collected), outcome definitions, statistical procedures used
   
   + RESULTS: summary of major findings to address the question raised in objective
   

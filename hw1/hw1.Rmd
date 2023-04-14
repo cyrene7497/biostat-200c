@@ -23,6 +23,7 @@ sessionInfo()
 ```{r}
 library(tidyverse)
 library(gtsummary)
+library(car)
 ```
 ```{r}
 # Rename rows since each row is a province in Switzerland. 
@@ -71,8 +72,8 @@ swiss1 <- swiss1 %>%
 The `middle` level only has 3 observations so we can split it into 2 levels instead by the median. 
 ```{r}
 swiss1 <- swiss1 %>% 
-  mutate(Catholic2 = case_when(Catholic < 15.14 ~ "low",
-                                    15.14 < Catholic ~ "high")) %>%
+  mutate(Catholic2 = case_when(Catholic < 75 ~ "low",
+                                    75 < Catholic ~ "high")) %>%
   mutate(Catholic2 = as.factor(Catholic2)) %>%
   print(width = Inf)
 ```
@@ -85,77 +86,72 @@ biglm <- lm(Fertility ~ (Agriculture + Examination + Education + Catholic2 + Inf
 smalllm <- stats::step(biglm, trace = TRUE)
 drop1(smalllm, test = "F")
 ```
+The F-test shows that the `Agriculture:Examination` and `Agriculture:Education` interaction terms can be dropped from the model. Thus the model after dropping these interactions is:
+```{r}
+lmodf <- lm(Fertility ~ Agriculture + Examination + Education + Catholic2 + 
+              Infant.Mortality + Agriculture:Infant.Mortality + Examination:Education + 
+              Examination:Infant.Mortality, swiss1)
+summary(lmodf)
+```
+
 #### Diagnostics 
+```{r}
+plot(lmodf)
+```
+It appears the model assumptions are generally met. The Residuals vs Fitted plot shows the residuals randomly around zero. This means we are roughly meeting the linearity and constant variance assumptions. The Normal Q-Q plot is almost linear so we've met the normality assumption as well.
+
+We can also look at the partial residuals for each component in the model without the interactions:
+```{r}
+crPlots(lmod)
+```
+The partial residual plots look mostly linear, but we can explore transforming `Examination`.
 
 #### Exploration of Transformations
-- An exploration of transformations to improve the fit of the model.
 
-Scatterplot of `Examination` and `Fertility` indicated that it might be helpful to transform `Examination` down the ladder of powers. 
+The previous scatterplot of `Infant.Mortality` and `Fertility` indicated that it might be helpful to transform `Infant.Mortality` down the ladder of powers. 
 ```{r}
 ggplot(data = swiss1) + 
-    geom_point(mapping = aes(x = Examination^(-.5), y = Fertility))
+    geom_point(mapping = aes(x = Infant.Mortality^(-.5), y = Fertility))
 ```
-The transformation makes the relationship slightly more linear.
+The transformation didn't improve the apparent fit much.
 ```{r}
 swiss1 <- swiss1 %>%
-  mutate(TransformedExam = Examination^(-.5)) %>%
+  mutate(TInfant.M = Infant.Mortality^(-.5)) %>%
   print(width = Inf)
-trlm <- lm(Fertility ~ Agriculture + TransformedExam + Education + 
-             CatholicLevels + Infant.Mortality, swiss1)
-summary(trlm)
+trlm <- lm(Fertility ~ Agriculture + Examination + Education + 
+             Catholic2 + TInfant.M, swiss1)
+crPlots(trlm)
 ```
-The fit improves with the transformed `Examination` variable. We can run the selection again with this transformation. 
+The fit doesn't improve the diagnostics, so we can continue without transformations. 
+
+#### Final Model
 ```{r}
-bigtrlm <- lm(Fertility ~ (Agriculture + TransformedExam + Education + 
-                             CatholicLevels + Infant.Mortality)^2, swiss1)
-smalltrlm <- step(bigtrlm, trace = TRUE)
-drop1(smalltrlm, test = "F")
-```
-The new final model is:
-```{r}
-finallm2 <- lm(Fertility ~ Agriculture + TransformedExam + Education + 
-                 CatholicLevels + Infant.Mortality + 
-                 Agriculture:TransformedExam +
-                 Agriculture:CatholicLevels + Agriculture:Infant.Mortality + 
-                 TransformedExam:CatholicLevels + 
-                 TransformedExam:Infant.Mortality, swiss1)
-summary(finallm2)
-finallm2 %>%
+lmodf %>%
   tbl_regression() %>%
   bold_labels() %>%
   bold_p(t = 0.05)
 ```
-
-#### Final Model
-
 ##### Diagnostics
+```{r}
+plot(lmodf)
+# swiss1 %>%
+#   mutate(cook = cooks.distance(lmodf)) %>%
+#   filter(cook >= 0.1) %>%
+#   print(width = Inf)
+cooks.distance(lmodf)
+```
+None of the cook's distances are high, all are lower than 0.1, so 
+```{r}
+swiss1 %>%
+  slice(c(1, 6, 19, 37, 46, 47)) %>% print(width = Inf)
+```
 
 #### Predictions 
 #### Variable Selection
 
-The F-test shows that the `Agriculture:Examination` and `CatholicLevels:Infant.Mortality` interaction terms can be dropped from the model. 
+
 
 So the final model is:
-```{r}
-# final model
-finallm <- lm(Fertility ~ Agriculture + Examination + CatholicLevels + 
-                Infant.Mortality + Agriculture:CatholicLevels + 
-                Agriculture:Infant.Mortality + Examination:Infant.Mortality,
-              swiss1)
-summary(finallm)
-finallm %>%
-  tbl_regression() %>%
-  bold_labels() %>%
-  bold_p(t = 0.05)
-```
-The fit of the model with the interactions is actually worse with the interaction terms than without.
-
-
-
-
-
-
-
 - Diagnostics to check the assumptions of your model.
 ```{r}
 plot(finallm2)

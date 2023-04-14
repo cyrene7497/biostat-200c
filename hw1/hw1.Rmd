@@ -41,7 +41,9 @@ swiss1 %>% subset(select = -c(Province)) %>%
                 c("{N_nonmiss}", "{median} ({p25}, {p75})", "{min}, {max}"),
               digits = all_continuous() ~ 2)
 ```
-All variables are numeric besides `Province`. All except for `Fertility` are proportions of the population. `Fertility` is the common standardized fertility measure $I_g$, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). 
+All variables are numeric besides `Province`. All except for `Fertility` are percentages based on proportions of the population. `Fertility` is the common standardized fertility measure $I_g$, general fertility which is equal to the total number of children born to married women divided by the maximum conceivable number of births based on the expected fertility of the Hutterites, an Anabaptist sect who practiced universal marriage and no birth control in the early twentieth century (representing maximum expected fertility). `Agriculture` is the percentage of males involved in agriculture as occupation. `Examination` is the percentage of draftees receiving highest mark on army examination. `Education` is the percentage of draftees who had an education beyond primary school. `Catholic` is the percent Catholic as opposed to Protestant. `Infant.Mortality` is the percent of live births who lived less than 1 year. 
+
+##### Graphical Characteristics
 ```{r}
 ggplot(data = swiss1) +
   geom_histogram(mapping = aes(x = Fertility)) + 
@@ -53,7 +55,7 @@ At first glance it appears that there might be some outliers of unusually low an
 for (var in c("Agriculture", "Examination", "Education", "Catholic", "Infant.Mortality")) {
   plot <- ggplot(data = swiss1) + 
     geom_point(mapping = aes(x = get(var), y = Fertility)) +
-    labs(x = var)
+    labs(x = var) + ggtitle(var) + theme_bw()
   print(plot)
 }
 ```
@@ -66,34 +68,26 @@ swiss1 <- swiss1 %>%
   mutate(CatholicLevels = as.factor(CatholicLevels)) %>%
   print(width = Inf)
 ```
-
-- Variable selection to choose the best model.
-
-  For variable selection we start with a big model (`biglm`) that includes all two-way interactions between predictors. By step-wise regression, we minimize the AIC (Akaike Information Criterion) to get a small model (`smalllm`). 
+The `middle` level only has 3 observations so we can split it into 2 levels instead by the median. 
 ```{r}
-lmod <- lm(Fertility ~ Agriculture + Examination + Education + CatholicLevels + Infant.Mortality, swiss1)
+swiss1 <- swiss1 %>% 
+  mutate(Catholic2 = case_when(Catholic < 15.14 ~ "low",
+                                    15.14 < Catholic ~ "high")) %>%
+  mutate(Catholic2 = as.factor(Catholic2)) %>%
+  print(width = Inf)
+```
+#### Variable Selection
+For variable selection we start with a big model (`biglm`) that includes all two-way interactions between predictors. By step-wise regression, we minimize the AIC (Akaike Information Criterion) to get a small model (`smalllm`). 
+```{r}
+lmod <- lm(Fertility ~ Agriculture + Examination + Education + Catholic2 + Infant.Mortality, swiss1)
 summary(lmod)
-biglm <- lm(Fertility ~ (Agriculture + Examination + Education + CatholicLevels + Infant.Mortality)^2, swiss1)
-smalllm <- step(biglm, trace = TRUE)
+biglm <- lm(Fertility ~ (Agriculture + Examination + Education + Catholic2 + Infant.Mortality)^2, swiss1)
+smalllm <- stats::step(biglm, trace = TRUE)
 drop1(smalllm, test = "F")
 ```
-The F-test shows that the `Agriculture:Examination` and `CatholicLevels:Infant.Mortality` interaction terms can be dropped from the model. 
+#### Diagnostics 
 
-So the final model is:
-```{r}
-# final model
-finallm <- lm(Fertility ~ Agriculture + Examination + CatholicLevels + 
-                Infant.Mortality + Agriculture:CatholicLevels + 
-                Agriculture:Infant.Mortality + Examination:Infant.Mortality,
-              swiss1)
-summary(finallm)
-finallm %>%
-  tbl_regression() %>%
-  bold_labels() %>%
-  bold_p(t = 0.05)
-```
-The fit of the model with the interactions is actually worse with the interaction terms than without.
-
+#### Exploration of Transformations
 - An exploration of transformations to improve the fit of the model.
 
 Scatterplot of `Examination` and `Fertility` indicated that it might be helpful to transform `Examination` down the ladder of powers. 
@@ -132,6 +126,35 @@ finallm2 %>%
   bold_p(t = 0.05)
 ```
 
+#### Final Model
+
+##### Diagnostics
+
+#### Predictions 
+#### Variable Selection
+
+The F-test shows that the `Agriculture:Examination` and `CatholicLevels:Infant.Mortality` interaction terms can be dropped from the model. 
+
+So the final model is:
+```{r}
+# final model
+finallm <- lm(Fertility ~ Agriculture + Examination + CatholicLevels + 
+                Infant.Mortality + Agriculture:CatholicLevels + 
+                Agriculture:Infant.Mortality + Examination:Infant.Mortality,
+              swiss1)
+summary(finallm)
+finallm %>%
+  tbl_regression() %>%
+  bold_labels() %>%
+  bold_p(t = 0.05)
+```
+The fit of the model with the interactions is actually worse with the interaction terms than without.
+
+
+
+
+
+
 
 - Diagnostics to check the assumptions of your model.
 ```{r}
@@ -166,6 +189,7 @@ pdf <- tibble(CatholicLevels = rep(levels(swiss2$CatholicLevels), 5),
 pp <- predict(finallm2, new = pdf) %>% print()
 pdf %>% mutate(predictedFertility = pp)
 ```
+#### Conclusion
 
 - An interpretation of the meaning of the model by writing a scientific abstract. (<150 words)
 

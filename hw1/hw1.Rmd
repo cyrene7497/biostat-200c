@@ -293,7 +293,17 @@ After selection by AIC, the predictors `pregnant`, `glucose`, `bmi`, `diabetes`,
 
 Create a variable that indicates whether the case contains a missing value. Use this variable as a predictor of the test result. Is missingness associated with the test result? Refit the selected model, but now using as much of the data as reasonable. Explain why it is appropriate to do this.
 
-If not associated then it's missing associated with randomness. Then try to reserve data and do 3-5 replicates of imputations? but bc missing vector that we created is not associated with the outcome you can use complete case analysis for this problem. This leads to a smaller data set that we're workign with. It will not give you the power for your test. due to smaller sample size after deleting missing. but the effect size is still valid. bc missingness is not associated with outcome. if you get rid of the missing it still accurately reflects if you didn't delete those outcomes. refit w na.omit
+```{r}
+pima1$has_na <- ifelse(apply(is.na(pima1), 1, sum) > 0, 1, 0)
+missings.glm <- glm(test_f2 ~ has_na, family = binomial, data = pima1)
+summary(missings.glm)
+```
+Since the missing values are not associated with the diabetes test outcome, we can assume that the missing values are occurring randomly. Therefore even with a smaller sample size after omitting NAs the effect size is still valid because missingness is not associated with the outcome. 
+
+```{r}
+
+```
+
 ### Q3.7
 
 Using the last fitted model of the previous question, what is the difference in the odds of testing positive for diabetes for a woman with a BMI at the first quartile compared with a woman at the third quartile, assuming that all other factors are held constant? Give a confidence interval for this difference.

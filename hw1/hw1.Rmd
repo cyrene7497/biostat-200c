@@ -261,10 +261,33 @@ There were 392 observations used in the model fitting. This is different from th
 ### Q3.4
 
 Refit the model but now without the insulin and triceps predictors. How many observations were used in fitting this model? Devise a test to compare this model with that in the previous question.
+```{r}
+# Diabetes Test Model 2
+dtm2 <- glm(test_f ~ pregnant + glucose + diastolic + bmi + diabetes + age,
+           family = "binomial", data = pima1)
+summary(dtm2)
+```
+The model without insulin or triceps used 724 observation. There were 44 observations omitted due to missingness. To compare this model with the previous model our null hypothesis is that the addition of `insulin` and `triceps` as predictors does not improve model fit, and the alternative hypothesis is that their addition does improve model fit. To assess whether the full model is superior to the reduced model (diabetes test model 2 versus model 1), we can take the differences in deviance of the two models and compute the chi-square test statistic. The residual deviance in model 1 is 344.02 on 383 degrees of freedom, and in model 2 is 672.86 on 717 degrees of freedom. So the chi-square test statistic is $672.86 - 344.02 = 328.84$ on $717 - 383 = 334$ degrees of freedom. We compute the p-value:
+```{r}
+dtm <- glm(test_f ~ pregnant + glucose + diastolic + triceps + insulin + bmi + 
+             diabetes + age,
+           family = "binomial", data = na.omit(pima1))
+dtm2 <- glm(test_f ~ pregnant + glucose + diastolic + bmi + diabetes + age,
+           family = "binomial", data = na.omit(pima1))
+anova(dtm, dtm2, test = "Chi")
+```
+The p-value is high so we accept the null hypothesis that the addition of `insulin` and `triceps` as predictors does not improve model fit. 
 
 ### Q3.5
 
-Use AIC to select a model. You will need to take account of the missing val- ues. Which predictors are selected? How many cases are used in your selected model?
+Use AIC to select a model. You will need to take account of the missing values. Which predictors are selected? How many cases are used in your selected model?
+```{r}
+bigdtm <- glm(test_f ~ pregnant + glucose + diastolic + triceps + insulin + bmi + 
+             diabetes + age, family = binomial, data = na.omit(pima1))
+smalldtm <- stats::step(bigdtm, trace = TRUE)
+summary(smalldtm)
+```
+After selection by AIC, the predictors `pregnant`, `glucose`, `bmi`, `diabetes`, and `age` were selected to be in the model. There were 392 observations included in this model. 
 
 ### Q3.6
 

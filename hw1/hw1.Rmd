@@ -162,12 +162,11 @@ It's interesting that a hypothetical province with average percentage of males i
   
   + **OBJECTIVE:** This study aimed to identify the factors influencing fertility and the observed decline in fertility in Switzerland, taking into account the variety of socioeconomic factors across the provinces.
   
-  + **METHODS:** Data was collected from the Office of Population Research. A linear regression analysis was performed to explore the factors contributing to fertility. 
-  study design (how these data were collected), outcome definitions, statistical procedures used
+  + **METHODS:** Data was collected from the Office of Population Research. A linear regression analysis was performed to explore the factors contributing to fertility. All variables but `Fertility` give proportions of the population. The original `Catholic` variable was turned into a categorical variable of two levels (`Catholic2`) since there were two distinct populations among the provinces -- those with more than 75% of draftees being Catholic, and those with less than 75% Catholic. 
   
-  + **RESULTS:** summary of major findings to address the question raised in objective
+  + **RESULTS:** The study found that, for provinces in Switzerland in 1888, the percentage of males involved in agriculture as an occupation, the percent of draftees receiving highest mark on army examination, percent education beyond primary school for draftees, whether there was a high or low percentage of Catholics as opposed to Protestants, and percent of live births who lived less than 1 year were significant predictors of fertility. 
   
-  + CONCLUSIONS:
+  + **CONCLUSIONS:** Overall the study found that agriculture, army examination, education, Catholicism, and infant mortality had negative $\beta$ values, indicating that their relationship with `Fertility` was negative. For example, a decrease in percentage of males involved in agriculture as an occupation would be associated with an increase in fertility on average, when holding all other factors constant. This might be due to provinces in Switzerland becoming more developed at the time of the data collection. 
 
 
 ## Q2. Concavity of logistic regression log-likelihood 

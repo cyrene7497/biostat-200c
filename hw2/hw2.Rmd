@@ -229,15 +229,26 @@ Read and run above code to generate a data frame `county_data` that includes cou
 
 What assumptions of logistic regression may be violated by this data set?
 
-One of the assumptions of logistic regression is that the outcome variable is not measured on an interval or ration scale. The outcome variable in this dataset is CFR (case fatality rate) which is a proportion/ratio.
+One of the assumptions of logistic regression is that the outcome variable is not measured on an interval or ratio scale. The outcome variable in this dataset is CFR (case fatality rate) which is a proportion/ratio.
 
 ### Q1.3 
 
 Run a logistic regression, using variables `state`, ..., `percent_rural` as predictors. 
 
+```{r}
+summary(glm(cbind(deaths, confirmed - deaths) ~ . - county, family = binomial, data = county_data))
+```
+
+
 ### Q1.4
 
 Interpret the regression coefficients of 3 significant predictors with p-value <0.01.
+
+- A one percent increase in population less than 18 years of age decreases the odds of death among confirmed cases of COVID by roughly 5% on average (exp(-4.812e-02) = 0.9530), holding all else constant in the state of Alabama. 
+
+- A one percent increase in fair or poor health in Alabama increases the odds of death among confirmed cases of COVID by .3% on average (exp(0.003092) = 1.003), holding all else constant.
+
+- COVID cases occurring in the District of Columbia have a .9% increase in odds of death as compared to other states holding all else constant. 
 
 ### Q1.5 
 

@@ -390,5 +390,37 @@ Show that $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
 
 ## Q3. ELMR Chapter 4 Excercise 3
 
-Data on social mobility of men in the UK may be found in `cmob`. A sample of men aged 45–64 was drawn from the 1971 census and 1981 census and the social class of the man was recorded at each timepoint. The classes are I=professional, II=semiprofessional, IIIN=skilled nonmanual, HIM=skilled manual, IV= semiskilled, V=unskilled.
+Data on social mobility of men in the UK may be found in `cmob`. A sample of men aged 45–64 was drawn from the 1971 census and 1981 census and the social class of the man was recorded at each timepoint. The classes are I = professional, II = semiprofessional, IIIN = skilled non-manual, HIM = skilled manual, IV = semiskilled, V = unskilled.
+
+### Q3.1 Check for symmetry, quasi-symmetry, marginal homogeneity and quasi- independence.
+
+We start by checking **independence**:
+```{r}
+cmob %>%
+  print(width = Inf)
+tab <- xtabs(cmob) %>% print()
+summary(tab)
+```
+It seems that there's strong evidence of dependence, which isn't surprising since mobility of social class probably depends strongly on the starting point. Now we can check for **symmetry**. We fit such a model by defining a factor where the levels represent the symmetric pairs of the off-diagonal elements.
+```{r}
+(symfac <- factor(apply(cmob[,2:3], 1,
+                        function(x) paste (sort(x), collapse="-"))))
+mods <- glm(y ~ symfac, cmob, family=poisson)
+c(deviance(mods), df.residual(mods))
+pchisq(deviance(mods), df.residual(mods), lower = F)
+```
+Here we see evidence of a lack of symmetry, so we can check the residuals. 
+```{r}
+round(xtabs(residuals(mods) ~ class71 + class81, cmob),3)
+```
+We see that there are more negative residuals above the diagonal, while those below the diagonal are mostly positive. So there is generally more unskilled in '71 who moved up by '81 than the reverse. We can go on to check **marginal homogeneity**:
+```{r}
+margin.table(tab, 1)
+margin.table(tab, 2)
+```
+We can see that there are somewhat more professional-class males in '81 than in '71, and more unskilled males in '71 than in '81 so perhaps marginal homogeneity does not hold here. The assumption of symmetry implies marginal homogeneity but the reverse is not necessarily true. The **quasi-symmetry** model allows for some symmetry while allowing for different marginals. We can fit the quasi-symmetry model:
+```{r}
+
+```
+
 

@@ -413,14 +413,27 @@ Here we see evidence of a lack of symmetry, so we can check the residuals.
 ```{r}
 round(xtabs(residuals(mods) ~ class71 + class81, cmob),3)
 ```
-We see that there are more negative residuals above the diagonal, while those below the diagonal are mostly positive. So there is generally more unskilled in '71 who moved up by '81 than the reverse. We can go on to check **marginal homogeneity**:
+We see that there are more negative residuals above the diagonal, while those below the diagonal are mostly positive. So there is generally more unskilled in '71 who moved up by '81 than the reverse. We can go on to check **homogeneity**:
 ```{r}
 margin.table(tab, 1)
 margin.table(tab, 2)
 ```
 We can see that there are somewhat more professional-class males in '81 than in '71, and more unskilled males in '71 than in '81 so perhaps marginal homogeneity does not hold here. The assumption of symmetry implies marginal homogeneity but the reverse is not necessarily true. The **quasi-symmetry** model allows for some symmetry while allowing for different marginals. We can fit the quasi-symmetry model:
 ```{r}
-
+modq <- glm(y ~ class71 + class81 + symfac, cmob, family = poisson)
+pchisq(deviance(modq), df.residual(modq), lower = F)
 ```
+This model does not fit either. We can test for **marginal homogeneity** by comparing the symmetry and quasi-symmetry models:
+```{r}
+anova(mods, modq, test = "Chi")
+```
+We find evidence of marginal homogeneity but it doesn't hold since we did not find quasi-symmetry. 
 
+We also notice that there are many people who fall in the diagonal of the original cross tabulation showing the number of people who did not change social status. We might ask whether there is independence between social class in '71 and social class in '81 among those people whose class did not change. This is the **quasi-independence** hypothesis which we can test by omitting the data from the diagonal:
+```{r}
+modqi <- glm(y ~ class71 + class81, cmob, family=poisson, 
+             subset=-c(1, 8, 15, 22, 29, 36))
+pchisq(deviance(modqi), df.residual(modqi), lower = F)
+```
+The model does not fit. This is not surprising since we can see that the groups close to the diagonal are larger than those farther away. The difference in social class between the two years is likely to be smaller than expected under independence. 
 

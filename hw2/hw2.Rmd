@@ -275,6 +275,10 @@ arrange(aod, `Pr(>Chi)`) %>%
 ### Q1.7
 
 Construct confidence intervals of regression coefficients.
+```{r}
+# confint(lmod)
+```
+
 
 ### Q1.8 
 

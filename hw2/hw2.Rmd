@@ -316,6 +316,10 @@ There are two observations in the predictor space that are potential outliers. T
 ### Q1.10
 
 Find the best sub-model using the AIC criterion.
+```{r}
+step(lmod, trace = TRUE)
+```
+AIC Criterion dropped 7 variables. 
 
 ### Q1.11
 

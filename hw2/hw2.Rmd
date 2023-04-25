@@ -283,6 +283,15 @@ Construct confidence intervals of regression coefficients.
 ### Q1.8 
 
 Plot the deviance residuals against the fitted values. Are there potential outliers?
+```{r}
+county_data %>%
+    mutate(devres = residuals(lmod, type = "deviance"),
+    linpred = predict(lmod, type = "link")) %>%
+    ggplot +
+        geom_point(mapping = aes(x = linpred, y = devres)) +
+        labs(x = "Linear predictor", y = "Deviance residual")
+```
+It looks like there is on potential outlier with a residual less than -5.0 and a group of observations that all fall around deviance residual of 0.
 
 ### Q1.9
 

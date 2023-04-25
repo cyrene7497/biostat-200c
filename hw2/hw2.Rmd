@@ -236,7 +236,8 @@ One of the assumptions of logistic regression is that the outcome variable is no
 Run a logistic regression, using variables `state`, ..., `percent_rural` as predictors. 
 
 ```{r}
-summary(glm(cbind(deaths, confirmed - deaths) ~ . - county, family = binomial, data = county_data))
+lmod <- glm(cbind(deaths, confirmed - deaths) ~ . - county, family = binomial, data = county_data)
+summary(lmod)
 ```
 
 
@@ -254,9 +255,20 @@ Interpret the regression coefficients of 3 significant predictors with p-value <
 
 Apply analysis of deviance to (1) evaluate the goodness of fit of the model and (2) compare the model to the intercept-only model. 
 
+```{r}
+pchisq(lmod$deviance, lmod$df.residual, lower = FALSE)
+```
+
+The model is not a good fit as the p-value is less than .05. This does **not** mean that the predictors are insignificant of the odds of death out of COVID cases in a county -- rather, it means our model has been "miss-calibrated" or "miss-specified" in some way. For example, it could mean that we are missing many other important predictors in our model, or it could mean that a model assumption has not been reasonably satisfied.
+
 ### Q1.6
 
 Perform analysis of deviance to evaluate the significance of each predictor. Display the 10 most significant predictors.
+
+```{r}
+
+```
+
 
 ### Q1.7
 

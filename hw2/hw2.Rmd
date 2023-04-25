@@ -12,6 +12,13 @@ knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
 ```
 
 To submit homework, please upload both Rmd and html files to Bruinlearn by the deadline.
+```{r}
+sessionInfo()
+```
+```{r}
+library(faraway)
+library(dplyr)
+```
 
 ## Q1. CFR of COVID-19
 
@@ -296,6 +303,15 @@ It looks like there is on potential outlier with a residual less than -5.0 and a
 ### Q1.9
 
 Plot the half-normal plot. Are there potential outliers in predictor space?
+
+```{r}
+halfnorm(hatvalues(lmod))
+```
+```{r}
+county_data %>%
+  slice(367, 931)
+```
+There are two observations in the predictor space that are potential outliers. The counties of District of Columbia and New York both have a percent with access to exercise opportunities of 100% which is unusual. It also might be unusual that these counties are 0% rural which might make them outliers in the predictor space.
 
 ### Q1.10
 

@@ -390,5 +390,5 @@ Show that $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
 
 ## Q3. ELMR Chapter 4 Excercise 3
 
-
+Data on social mobility of men in the UK may be found in `cmob`. A sample of men aged 45–64 was drawn from the 1971 census and 1981 census and the social class of the man was recorded at each timepoint. The classes are I=professional, II=semiprofessional, IIIN=skilled nonmanual, HIM=skilled manual, IV= semiskilled, V=unskilled.
 

@@ -236,7 +236,7 @@ Read and run above code to generate a data frame `county_data` that includes cou
 
 What assumptions of logistic regression may be violated by this data set?
 
-One of the assumptions of logistic regression is that the outcome variable is not measured on an interval or ratio scale. The outcome variable in this dataset is CFR (case fatality rate) which is a proportion/ratio.
+One of the assumptions of logistic regression is that the observations are independent from one another. In this case since the observations are counties and cases of COVID, they may not be independent in counties that are adjacent to one another.
 
 ### Q1.3 
 
@@ -277,12 +277,16 @@ aod <- drop1(lmod, test = "Chi")
 arrange(aod, `Pr(>Chi)`) %>%
   head(10)
 ```
-
+The top ten most significant predictors are `state`, `percent_homeowners`, `percent_insufficient_sleep`, `percent_severe_housing_problems`, `percent_children_in_poverty`, `median_household_income`, `percent_some_college`, `percent_fair_or_poor_health`, `percent_less_than_18_years_of_age`, and `percent_smokers`. 
 
 ### Q1.7
 
 Construct confidence intervals of regression coefficients.
 ```{r}
+# library(gtsummary)
+# lmod %>%
+#   tbl_regression(intercept = TRUE, exponentiate = TRUE)
+# library(MASS)
 # confint(lmod)
 ```
 
@@ -325,6 +329,17 @@ AIC Criterion dropped 7 variables.
 
 Find the best sub-model using the lasso with cross validation.
 glmnet doesn't have the functionality for binomial but has glm for bernoulli. you have to transform the dataset into the format w obs_wt the way we did in binomial notes o-ring. then you can use glmnet and lasso. outcome vector as outcome.
+
+```{r}
+obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
+county_data %>%
+  slice(rep(1:n(), each = 2)) %>% # replicate each row twice
+  mutate(deaths = rep(c(1, 0), 1446)) %>%
+  mutate(obs_wt = obs_wt) %>%
+  glm(deaths ~ . - county - confirmed, weights = obs_wt, family = binomial, data = .) %>%
+  summary()
+```
+
 
 ## Q2. Odds ratios
 

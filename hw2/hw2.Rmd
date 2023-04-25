@@ -332,12 +332,14 @@ glmnet doesn't have the functionality for binomial but has glm for bernoulli. yo
 
 ```{r}
 obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
-county_data %>%
+county_data_long <- county_data %>%
   slice(rep(1:n(), each = 2)) %>% # replicate each row twice
   mutate(deaths = rep(c(1, 0), 1446)) %>%
-  mutate(obs_wt = obs_wt) %>%
-  glm(deaths ~ . - county - confirmed, weights = obs_wt, family = binomial, data = .) %>%
-  summary()
+  mutate(obs_wt = obs_wt)
+county_data_long %>% print(width = Inf)
+
+glm(deaths ~ . - county - confirmed - obs_wt, weights = obs_wt, family = binomial, data = county_data_long) %>%
+summary()
 ```
 
 

@@ -266,7 +266,7 @@ The model is not a good fit as the p-value is less than .05. This does **not** m
 Perform analysis of deviance to evaluate the significance of each predictor. Display the 10 most significant predictors.
 
 ```{r}
-
+drop1(lmod, test = "Chi")
 ```
 
 

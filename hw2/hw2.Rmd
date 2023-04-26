@@ -283,9 +283,10 @@ The top ten most significant predictors are `state`, `percent_homeowners`, `perc
 
 Construct confidence intervals of regression coefficients.
 ```{r}
-# library(gtsummary)
-# lmod %>%
-#   tbl_regression(intercept = TRUE, exponentiate = TRUE)
+library(gtsummary)
+lmod %>%
+  tbl_regression(intercept = TRUE, exponentiate = TRUE) %>%
+  suppressWarnings()
 # library(MASS)
 # confint(lmod)
 ```
@@ -438,3 +439,29 @@ pchisq(deviance(modqi), df.residual(modqi), lower = F)
 The model does not fit. This is not surprising since we can see that the groups close to the diagonal are larger than those farther away. The difference in social class between the two years is likely to be smaller than expected under independence. 
 
 ### Q3.2 Develop a score-based model. Find some good-fitting scores.
+
+First we can fit a nominal-by-nominal model:
+```{r}
+nomod <- glm(y ~ class71 + class81, cmob, family = poisson)
+pchisq(deviance(nomod), df.residual(nomod), lower = F)
+```
+We find evidence against independence. However, we can take advantage of the ordinal structure of the class variables and define some scores. Since there's no reason for the contrary, we assign evenly spaced scores:
+```{r}
+cmob$class71o <- unclass(cmob$class71)
+cmob$class81o <- unclass(cmob$class81)
+ormod <- glm(y ~ class71 + class81 + I(class71o*class81o), cmob, family= poisson)
+anova(nomod, ormod, test="Chi")
+```
+We see that there is some evidence of an association. Using the ordinal information gives us more power to detect the association. 
+We can examine $\hat{\gamma}$:
+```{r}
+summary(ormod)$coef['I(class71o*class81o)',]
+```
+To assess the robustness of the assignment of scores we can assign other scores so that there is more distinction between higher class and lower class. 
+```{r}
+aclass <- c(1,4,5,6,9)
+bclass <- c(1,1,5,9,9)
+ormoda <- glm(y ~ class71 + class81 + I(aclass[class71o]*bclass[class81o]), cmob, family= poisson)
+anova(nomod, ormoda, test="Chi")
+```
+

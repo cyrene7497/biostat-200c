@@ -437,3 +437,4 @@ pchisq(deviance(modqi), df.residual(modqi), lower = F)
 ```
 The model does not fit. This is not surprising since we can see that the groups close to the diagonal are larger than those farther away. The difference in social class between the two years is likely to be smaller than expected under independence. 
 
+### Q3.2 Develop a score-based model. Find some good-fitting scores.

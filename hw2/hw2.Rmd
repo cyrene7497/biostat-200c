@@ -456,6 +456,7 @@ final_fit %>%
 tidy(extract_fit_engine(final_fit)) %>%
   filter(lambda > 0.001 & lambda < 0.0011)
 ```
+This model is quite different from the one selected by AIC. 
 
 ## Q2. Odds ratios
 
@@ -501,6 +502,21 @@ $$
 \pi_{ij} = \frac{e^{\alpha_i + \beta_i x_j}}{1 + e^{\alpha_i + \beta_i x_j}}, \quad i = 1,2, \quad j= 1,\ldots, J.
 $$
 Show that $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
+
+**Solution** 
+
+\begin{eqnarray*}
+\pi_{1j} = \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} & 
+\pi_{2j} = \frac{e^{\alpha_2 + \beta_2 x_j}}{1 + e^{\alpha_2 + \beta_2 x_j}} \\
+\phi = \frac{\pi_1(1 - \pi_2)}{\pi_2 (1 - \pi_1)} \\
+$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot (1 - \frac{e^{\alpha_2 + \beta_2 x_j}}{1 + e^{\alpha_2 + \beta_2 x_j}}) \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot  (1 - \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}})^{-1} \\
+$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot \frac{1}{1 + e^{\alpha_2 + \beta_2 x_j}} \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot (1 + e^{\alpha_1 + \beta_1 x_j}) \\
+$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{e^{\alpha_2 + \beta_2 x_j}} = \frac{e^{\alpha_1} \cdot e^{\beta_1 xj}}{e^{\alpha_2} \cdot e^{\beta_2 x_j}} \\
+$=$ \frac{e^{\alpha_1}}{e^{\alpha_2}} \text{because \beta_1 = \beta_2} \\
+\log \phi = \log{e^{\alpha_1}} - \log{e^{\alpha_2}} = \alpha_1 - \alpha_2
+\end{eqnarray*}
+
+All $x_j$s cancelled out so the expression is no longer dependent on $J$. Therefore this is true for all $J$ and $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
 
 ## Q3. ELMR Chapter 4 Excercise 3
 

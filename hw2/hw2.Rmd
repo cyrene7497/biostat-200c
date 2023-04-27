@@ -263,10 +263,14 @@ Interpret the regression coefficients of 3 significant predictors with p-value <
 Apply analysis of deviance to (1) evaluate the goodness of fit of the model and (2) compare the model to the intercept-only model. 
 
 ```{r}
-pchisq(lmod$deviance, lmod$df.residual, lower = FALSE)
+pchisq(lmod$deviance, lmod$df.residual, lower.tail = FALSE)
 ```
-
-The model is not a good fit as the p-value is less than .05. This does **not** mean that the predictors are insignificant of the odds of death out of COVID cases in a county -- rather, it means our model has been "miss-calibrated" or "miss-specified" in some way. For example, it could mean that we are missing many other important predictors in our model, or it could mean that a model assumption has not been reasonably satisfied.
+The small p-value suggests the model is not well-calibrated. This does **not** mean that the predictors are insignificant of the odds of death out of COVID cases in a county -- rather, it means our model has been "miss-calibrated" or "miss-specified" in some way. For example, it could mean that we are missing many other important predictors in our model, or it could mean that a model assumption has not been reasonably satisfied.
+```{r}
+pchisq(lmod$null.deviance - lmod$deviance, lmod$df.null - lmod$df.residual, 
+       lower.tail = FALSE)
+```
+The small p-value suggests that the model performs better than the intercept-only model. 
 
 ### Q1.6
 
@@ -520,10 +524,21 @@ All $x_j$s cancelled out so the expression is no longer dependent on $J$. Theref
 
 ## Q3. ELMR Chapter 4 Excercise 3
 
-The infert dataset presents data from a study of secondary infertility (failure to conceive after at least one previous conception). The factors of interest are induced abortions and spontaneous abortions (e.g., miscarriages). The study matched each case of infertility with two controls who were not infertile, matching on age, edu- cation and parity (number of prior pregnancies).
-
+The `infert` dataset presents data from a study of secondary infertility (failure to conceive after at least one previous conception). The factors of interest are induced abortions and spontaneous abortions (e.g., miscarriages). The study matched each case of infertility with two controls who were not infertile, matching on age, education and parity (number of prior pregnancies).
+```{r}
+infert %>%
+  print(width = Inf)
+```
 ### Q3.1
-Construct cross-classified tables by number of spontaneous and induced abor- tions separately for cases and controls. Comment on the differences between the two tables.
+Construct cross-classified tables by number of spontaneous and induced abortions separately for cases and controls. Comment on the differences between the two tables.
+```{r}
+infert %>%
+xtabs( ~ spontaneous + induced + case, .) %>%
+  print() %>% 
+  prop.table()
+```
+
+
 
 ### Q3.2 
 Fit a binary response model with only spontaneous and induced as predictors. Determine the statistical significance of these predictors. Express the effects of the predictors in terms of odds.

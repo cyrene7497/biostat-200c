@@ -324,7 +324,7 @@ There are two observations in the predictor space that are potential outliers. T
 
 Find the best sub-model using the AIC criterion.
 ```{r}
-step(lmod, trace = TRUE)
+stats::step(lmod, trace = TRUE)
 ```
 AIC Criterion dropped 7 variables -- `percent_adults_with_obesity`, `percent_with_access_to_exercise_opportunities`, `overcrowding`, `average_traffic_volume_per_meter_of_major_roadways`, `percent_65_and_over`, `percent_asian` and `percent_rural`. It's strange that overcrowding was dropped since that seems very related to COVID spread, but it must not be indicative of **dying** from a diagnosis of COVID. 
 
@@ -348,7 +348,7 @@ library(tidymodels)
 ```
 ```{r}
 # For reproducibility
-set.seed(201)
+set.seed(200)
 
 data_split <- initial_split(
   county_data_long, 
@@ -408,7 +408,7 @@ param_grid
 ```
 ```{r}
 # Set cross-validation partitions
-set.seed(202)
+set.seed(201)
 
 folds <- vfold_cv(county_other, v = 5)
 folds
@@ -513,14 +513,14 @@ Show that $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
 \pi_{1j} = \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} & 
 \pi_{2j} = \frac{e^{\alpha_2 + \beta_2 x_j}}{1 + e^{\alpha_2 + \beta_2 x_j}} \\
 \phi = \frac{\pi_1(1 - \pi_2)}{\pi_2 (1 - \pi_1)} \\
-$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot (1 - \frac{e^{\alpha_2 + \beta_2 x_j}}{1 + e^{\alpha_2 + \beta_2 x_j}}) \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot  (1 - \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}})^{-1} \\
-$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot \frac{1}{1 + e^{\alpha_2 + \beta_2 x_j}} \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot (1 + e^{\alpha_1 + \beta_1 x_j}) \\
-$=$ \frac{e^{\alpha_1 + \beta_1 x_j}}{e^{\alpha_2 + \beta_2 x_j}} = \frac{e^{\alpha_1} \cdot e^{\beta_1 xj}}{e^{\alpha_2} \cdot e^{\beta_2 x_j}} \\
-$=$ \frac{e^{\alpha_1}}{e^{\alpha_2}} \text{because \beta_1 = \beta_2} \\
+&=& \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot (1 - \frac{e^{\alpha_2 + \beta_2 x_j}}{1 + e^{\alpha_2 + \beta_2 x_j}}) \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot  (1 - \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}})^{-1} \\
+&=& \frac{e^{\alpha_1 + \beta_1 x_j}}{1 + e^{\alpha_1 + \beta_1 x_j}} \cdot \frac{1}{1 + e^{\alpha_2 + \beta_2 x_j}} \cdot \frac{1 + e^{\alpha_2 + \beta_2 x_j}}{e^{\alpha_2 + \beta_2 x_j}} \cdot (1 + e^{\alpha_1 + \beta_1 x_j}) \\
+&=& \frac{e^{\alpha_1 + \beta_1 x_j}}{e^{\alpha_2 + \beta_2 x_j}} = \frac{e^{\alpha_1} \cdot e^{\beta_1 xj}}{e^{\alpha_2} \cdot e^{\beta_2 x_j}} \\
+&=& \frac{e^{\alpha_1}}{e^{\alpha_2}} \text{because \beta_1 = \beta_2} \\
 \log \phi = \log{e^{\alpha_1}} - \log{e^{\alpha_2}} = \alpha_1 - \alpha_2
 \end{eqnarray*}
 
-All $x_j$s cancelled out so the expression is no longer dependent on $J$. Therefore this is true for all $J$ and $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
+All $x_j$s cancelled out so the expression is no longer dependent on $j$. Therefore this is true for all $j$ and $\log \phi$ is constant over all tables if $\beta_1 = \beta_2$.
 
 ## Q3. ELMR Chapter 4 Excercise 3
 
@@ -537,11 +537,15 @@ xtabs( ~ spontaneous + induced + case, .) %>%
   print() %>% 
   prop.table()
 ```
-
-
+There are many more control cases with no spontaneous or induced abortions than those in the case group. Proportionally both case and control groups have no observations of women with 2 or more spontaneous abortions as well as 2 or more induced abortions.  
 
 ### Q3.2 
 Fit a binary response model with only spontaneous and induced as predictors. Determine the statistical significance of these predictors. Express the effects of the predictors in terms of odds.
+```{r}
+m1 <- glm(case ~ spontaneous + induced, family = binomial, infert)
+summary(m1)
+```
+A one unit increase in the number of spontaneous abortions increases the odds of failing to conceive after at least one previous conception (classified as an infertility case) by `r exp(coef(m1)[2])` times (3.3 fold increase in odds). A one unit increase in the number of induced abortions increases the odds of being classified as an infertility case by `r exp(coef(m1)[3])` times (1.5 fold increase in odds or 50% increase). 
 
 ### Q3.3
 Fit a binary response model with only education, age and parity as predictors. Explain how the significance (or lack thereof) of these predictors should be interpreted.

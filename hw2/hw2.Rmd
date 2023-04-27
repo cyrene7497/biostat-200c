@@ -535,13 +535,13 @@ It seems that there's strong evidence of dependence, which isn't surprising sinc
 ```{r}
 (symfac <- factor(apply(cmob[,2:3], 1,
                         function(x) paste (sort(x), collapse="-"))))
-mods <- glm(y ~ symfac, cmob, family=poisson)
+mods <- glm(y ~ symfac, cmob, family = poisson)
 c(deviance(mods), df.residual(mods))
 pchisq(deviance(mods), df.residual(mods), lower = F)
 ```
 Here we see evidence of a lack of symmetry, so we can check the residuals. 
 ```{r}
-round(xtabs(residuals(mods) ~ class71 + class81, cmob),3)
+round(xtabs(residuals(mods) ~ class71 + class81, cmob), 3)
 ```
 We see that there are more negative residuals above the diagonal, while those below the diagonal are mostly positive. So there is generally more unskilled in '71 who moved up by '81 than the reverse. We can go on to check **homogeneity**:
 ```{r}
@@ -561,7 +561,7 @@ We find evidence of marginal homogeneity but it doesn't hold since we did not fi
 
 We also notice that there are many people who fall in the diagonal of the original cross tabulation showing the number of people who did not change social status. We might ask whether there is independence between social class in '71 and social class in '81 among those people whose class did not change. This is the **quasi-independence** hypothesis which we can test by omitting the data from the diagonal:
 ```{r}
-modqi <- glm(y ~ class71 + class81, cmob, family=poisson, 
+modqi <- glm(y ~ class71 + class81, cmob, family=poisson,
              subset=-c(1, 8, 15, 22, 29, 36))
 pchisq(deviance(modqi), df.residual(modqi), lower = F)
 ```
@@ -584,13 +584,13 @@ anova(nomod, ormod, test="Chi")
 We see that there is some evidence of an association. Using the ordinal information gives us more power to detect the association. 
 We can examine $\hat{\gamma}$:
 ```{r}
-summary(ormod)$coef['I(class71o*class81o)',]
+summary(ormod)$coef
 ```
 To assess the robustness of the assignment of scores we can assign other scores so that there is more distinction between higher class and lower class. 
 ```{r}
-aclass <- c(1,4,5,6,9)
-bclass <- c(1,1,5,9,9)
-ormoda <- glm(y ~ class71 + class81 + I(aclass[class71o]*bclass[class81o]), cmob, family= poisson)
-anova(nomod, ormoda, test="Chi")
+# aclass <- c(1,4,5,6,9)
+# bclass <- c(1,1,5,9,9)
+# ormoda <- glm(y ~ class71 + class81 + I(aclass[class71o]*bclass[class81o]), cmob, family= poisson)
+# anova(nomod, ormoda, test="Chi")
 ```
 

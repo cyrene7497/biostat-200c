@@ -20,7 +20,7 @@ library(faraway)
 library(dplyr)
 ```
 
-## Q1. CFR of COVID-19
+## Q1. Case Fatality Rate of COVID-19
 
 Of primary interest to public is the risk of dying from COVID-19. A commonly used measure is case fatality rate/ratio/risk (CFR), which is defined as
 $$
@@ -236,7 +236,7 @@ Read and run above code to generate a data frame `county_data` that includes cou
 
 What assumptions of logistic regression may be violated by this data set?
 
-One of the assumptions of logistic regression is that the observations are independent from one another. In this case since the observations are counties and cases of COVID, they may not be independent in counties that are adjacent to one another.
+One of the assumptions of logistic regression is that the observations are independent from one another. In this case since the observations are counties and cases of COVID, they may not be independent in counties that are adjacent to one another since a high count of cases in one county might affect counts in the adjacent counties.
 
 ### Q1.3 
 
@@ -287,8 +287,6 @@ library(gtsummary)
 lmod %>%
   tbl_regression(intercept = TRUE, exponentiate = TRUE) %>%
   suppressWarnings()
-# library(MASS)
-# confint(lmod)
 ```
 
 
@@ -303,7 +301,7 @@ county_data %>%
         geom_point(mapping = aes(x = linpred, y = devres)) +
         labs(x = "Linear predictor", y = "Deviance residual")
 ```
-It looks like there is on potential outlier with a residual less than -5.0 and a group of observations that all fall around deviance residual of 0.
+It looks like there is on potential outlier with a residual less than -5.0 and a group of observations that all fall around deviance residual of 0. The counties with residuals near zero are also potentially outliers. Because of these observations where there is no death at all, the predicted probability would be very small and close to zero.
 
 ### Q1.9
 
@@ -324,7 +322,7 @@ Find the best sub-model using the AIC criterion.
 ```{r}
 step(lmod, trace = TRUE)
 ```
-AIC Criterion dropped 7 variables. 
+AIC Criterion dropped 7 variables -- `percent_adults_with_obesity`, `percent_with_access_to_exercise_opportunities`, `overcrowding`, `average_traffic_volume_per_meter_of_major_roadways`, `percent_65_and_over`, `percent_asian` and `percent_rural`. It's strange that overcrowding was dropped since that seems very related to COVID spread, but it must not be indicative of **dying** from a diagnosis of COVID. 
 
 ### Q1.11
 

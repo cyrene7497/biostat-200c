@@ -326,8 +326,9 @@ AIC Criterion dropped 7 variables -- `percent_adults_with_obesity`, `percent_wit
 
 ### Q1.11
 
-Find the best sub-model using the lasso with cross validation.
-glmnet doesn't have the functionality for binomial but has glm for bernoulli. you have to transform the dataset into the format w obs_wt the way we did in binomial notes o-ring. then you can use glmnet and lasso. outcome vector as outcome.
+Find the best sub-model using the lasso with cross validation. 
+
+`glmnet` doesn't have the functionality for binomial but has for bernoulli outcome variables. We first transform the dataset into a format with an `obs_wt` to make it a long format similar to a binomial outcome variable. 
 
 ```{r}
 obs_wt = c(rbind(county_data$deaths, county_data$confirmed - county_data$deaths))
@@ -335,12 +336,126 @@ county_data_long <- county_data %>%
   slice(rep(1:n(), each = 2)) %>% # replicate each row twice
   mutate(deaths = rep(c(1, 0), 1446)) %>%
   mutate(obs_wt = obs_wt)
+county_data_long$deaths <- as_factor(county_data_long$deaths)
 county_data_long %>% print(width = Inf)
+```
+```{r}
+library(tidymodels)
+```
+```{r}
+# For reproducibility
+set.seed(201)
 
-glm(deaths ~ . - county - confirmed - obs_wt, weights = obs_wt, family = binomial, data = county_data_long) %>%
-summary()
+data_split <- initial_split(
+  county_data_long, 
+  # stratify by deaths
+  strata = "deaths", 
+  prop = 0.70
+  )
+data_split
+```
+```{r}
+county_other <- training(data_split)
+dim(county_other)
+county_test <- testing(data_split)
+dim(county_test)
+```
+```{r}
+logit_recipe <- 
+  recipe(
+    deaths ~ . , 
+    data = county_other
+  ) %>%
+  step_rm(county) %>%
+  step_rm(confirmed) %>%
+  step_rm(obs_wt) %>%
+  # create traditional dummy variables
+  step_dummy(all_nominal_predictors()) %>%
+  # zero-variance filter
+  step_zv(all_numeric_predictors()) %>% 
+  # center and scale numeric data
+  step_normalize(all_numeric_predictors()) %>%
+  # estimate the means and standard deviations
+  prep(training = county_other, retain = TRUE)
+logit_recipe
+```
+```{r}
+logit_mod <- 
+  logistic_reg(
+    penalty = tune(), 
+    mixture = 1 # tune()
+  ) %>% 
+  set_engine("glmnet", standardize = FALSE)
+logit_mod
+```
+```{r}
+logit_wf <- workflow() %>%
+  add_recipe(logit_recipe) %>%
+  add_model(logit_mod)
+logit_wf
+```
+```{r}
+param_grid <- grid_regular(
+  penalty(range = c(-6, 3)), 
+  # mixture(),
+  levels = 100 # c(100, 5)
+  )
+param_grid
+```
+```{r}
+# Set cross-validation partitions
+set.seed(202)
+
+folds <- vfold_cv(county_other, v = 5)
+folds
+```
+```{r}
+system.time({
+logit_fit <- logit_wf %>%
+  tune_grid(
+    resamples = folds,
+    grid = param_grid,
+    metrics = metric_set(roc_auc, accuracy)
+    )
+})
 ```
 
+```{r}
+logit_fit
+```
+```{r}
+logit_fit %>%
+  collect_metrics() %>%
+  print(width = Inf) %>%
+  filter(.metric == "roc_auc") %>%
+  ggplot(mapping = aes(x = penalty, y = mean)) +
+  geom_point() +
+  labs(x = "Penalty", y = "CV AUC") +
+  scale_x_log10()
+```
+```{r}
+best_logit <- logit_fit %>%
+  select_best("roc_auc")
+best_logit
+```
+```{r}
+final_wf <- logit_wf %>%
+  finalize_workflow(best_logit)
+final_wf
+```
+```{r}
+# Fit the whole training set, then predict the test cases
+final_fit <- 
+  final_wf %>%
+  last_fit(data_split)
+final_fit
+```
+```{r}
+final_fit %>% 
+  collect_metrics()
+tidy(extract_fit_engine(final_fit)) %>%
+  filter(lambda > 0.001 & lambda < 0.0011)
+```
 
 ## Q2. Odds ratios
 

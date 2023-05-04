@@ -46,11 +46,18 @@ Therefore the Hessian matrix with respect to the regression coefficients $\bolds
 &=& - \sum_i e^{\mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i \mathbf{x}_i^T \\
 \end{eqnarray*}
 
-### Q1.3
+### Q1.3 Negative Hessian is PSD
 
-Show that the log-likelihood function of the log-linear model is a concave function in regression coefficients $\boldsymbol{\beta}$. (Hint: show that the negative Hessian is a positive semidefinite matrix.)
+Show that the log-likelihood function of the log-linear model is a concave function in regression coefficients $\boldsymbol{\beta}$. (Hint: show that the negative Hessian is a positive semi-definite matrix.)
 
-### Q1.4
+
+Given the hessian from above, the negative hessian is:
+$$
+\sum_i e^{\mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i \mathbf{x}_i^T
+$$
+which is always positive because $e^{\mathbf{x}_i^T \boldsymbol{\beta}}$ is always positive. 
+
+### Q1.4 Deviance
 
 Show that for the fitted values $\widehat{\mu}_i$ from maximum likelihood estimates
 $$
@@ -77,7 +84,24 @@ $$
 $$
 Show $\mathbb{E}Y = \mu = rp / (1 - p)$ and $\operatorname{Var} Y = r p / (1 - p)^2$.
 
+\begin{eqnarray*}
+\mathbb{E}Y &=& \sum_{y=0}^\infty y \binom{y + r - 1}{r - 1} (1 - p)^r p^y \\
+&=& \sum_{y=0}^\infty y \binom{y + r - 1}{y} (1 - p)^r p^y \\
+&=& \sum_{y=1}^\infty \frac{(y + r - 1)!}{(y - 1)!(r - 1)!} (1 - p)^r p^y \\
+
+\end{eqnarray*}
+
 ## Q3. ELMR Chapter 5 Exercise 5 (page 100)
+
+residual vs fitted part d linear predictor is xi'beat and fitted is exponentiating the poisson 
+For poisson, link function is log link. So log(mu) = xi’b
+Linear predictor is xi’b (always)
+Fitted values for poisson is exp(xi’b)
+To undo that log
+in bernoulli it would be applying inverse logit to get fitted 
+predict function specify response gives you fitted values. if you specify something else it'll give you the link? 
+predprob = predict(lmod, type = "response"), 
+linpred  = predict(lmod, type = "link" linear predictor
 
 ## Q4. Uniform association 
 plug in counts and will see that its not dependent on k anymore

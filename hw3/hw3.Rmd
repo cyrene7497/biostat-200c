@@ -1,0 +1,94 @@
+---
+title: "Biostat 200C Homework 3"
+author: "Cyrene Arputhasamy"
+subtitle: Due May 5 @ 11:59PM
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+To submit homework, please upload both Rmd and html files to BruinLearn by the deadline.
+
+## Q1. Concavity of Poisson regression log-likelihood 
+
+Let $Y_1,\ldots,Y_n$ be independent random variables with $Y_i \sim \text{Poisson}(\mu_i)$ and $\log \mu_i = \mathbf{x}_i^T \boldsymbol{\beta}$, $i = 1,\ldots,n$.
+
+### Q1.1 Log-likelihood of Poisson regression
+
+Write down the log-likelihood function.
+
+Given the $n$ independent data points $(y_i, \mathbf{x}_i)$, $i=1,\ldots,n$, the log-likelihood is
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_i y_i \log \mu_i - \mu_i - \log y_i! \\
+&=& \sum_i y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - e^{\mathbf{x}_i^T \boldsymbol{\beta}} - \log y_i!
+\end{eqnarray*}
+
+### Q1.2 Gradient and Hessian of the log-likelihood
+
+Derive the gradient vector and Hessian matrix of the log-likelhood function with respect to the regression coefficients $\boldsymbol{\beta}$. 
+
+\begin{eqnarray*}
+\ell(\boldsymbol{\beta}) &=& \sum_i y_i \log \mu_i - \mu_i - \log y_i! \\
+\nabla_\beta(\mathbf{x}_i^T \boldsymbol{\beta}) &=& \nabla_\beta(\mathbf{x}_{i0} \beta_0 + \mathbf{x}_{i1} \beta_1 + \cdots + \mathbf{x}_{ip} \beta_p) = \mathbf{x}_i \\
+\nabla_\beta \ell(\cdot) &=& \sum_i y_i(\nabla_\beta \mathbf{x}_i^T \boldsymbol{\beta}) - \nabla_\beta (e^{\mathbf{x}_i^T \boldsymbol{\beta}}) - \nabla_\beta (\log y_i!)\\
+&=& \sum_i y_i \mathbf{x}_i - e^{\mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i \\
+\end{eqnarray*}
+
+Therefore the Hessian matrix with respect to the regression coefficients $\boldsymbol{\beta}$ is:
+
+\begin{eqnarray*}
+\nabla_\beta(\frac{\partial \ell(\cdot)}{\partial \beta}) &=& \sum_i \nabla_\beta(y_i \mathbf{x}_i - e^{\mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i) \\
+&=& - \sum_i e^{\mathbf{x}_i^T \boldsymbol{\beta}} \mathbf{x}_i \mathbf{x}_i^T \\
+\end{eqnarray*}
+
+### Q1.3
+
+Show that the log-likelihood function of the log-linear model is a concave function in regression coefficients $\boldsymbol{\beta}$. (Hint: show that the negative Hessian is a positive semidefinite matrix.)
+
+### Q1.4
+
+Show that for the fitted values $\widehat{\mu}_i$ from maximum likelihood estimates
+$$
+\sum_i \widehat{\mu}_i = \sum_i y_i.
+$$
+Therefore the deviance reduces to
+$$
+D = 2 \sum_i y_i \log \frac{y_i}{\widehat{\mu}_i}.
+$$
+
+\begin{eqnarray*}
+D &=& 2 \log \frac{L (\mathbf{b}_{max})}{L(\mathbf{b})} = 2[\ell(\mathbf{b}_{max})- \ell(\mathbf{b})] \\
+&=& 2 \sum_i [y_i \log(y_i) - y_i] - 2 \sum_i [y_i \log (\widehat{\mu}_i) - \widehat{\mu}_i] \\
+&=& 2 \sum_i [y_i \log(y_i / \widehat{\mu}_i) - (y_i - \widehat{\mu}_i)] \\
+&=& 2 \sum_i y_i \log(y_i / \widehat{\mu}_i)
+\end{eqnarray*}
+
+
+## Q2. Show negative binomial distribution mean and variance 
+
+Recall the probability mass function of negative binomial distribution is 
+$$
+\mathbb{P}(Y = y) = \binom{y + r - 1}{r - 1} (1 - p)^r p^y, \quad y = 0, 1, \ldots
+$$
+Show $\mathbb{E}Y = \mu = rp / (1 - p)$ and $\operatorname{Var} Y = r p / (1 - p)^2$.
+
+## Q3. ELMR Chapter 5 Exercise 5 (page 100)
+
+## Q4. Uniform association 
+plug in counts and will see that its not dependent on k anymore
+For the uniform association when all two-way interactions are included, i.e., 
+$$
+\log \mathbb{E}Y_{ijk} = \log p_{ijk} = \log n + \log p_i + \log p_j + \log p_k + \log p_{ij} + \log p_{ik} + \log p_{jk}.
+$$
+
+Proof the odds ratio (or log of odds ratio) across all stratum $k$ 
+$$
+\log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}}
+$$
+
+is a constant, i.e., the estimated effect of the interaction term "i:j" in the uniform association model 

@@ -162,9 +162,27 @@ $$
 \log \mathbb{E}Y_{ijk} = \log p_{ijk} = \log n + \log p_i + \log p_j + \log p_k + \log p_{ij} + \log p_{ik} + \log p_{jk}.
 $$
 
-Proof the odds ratio (or log of odds ratio) across all stratum $k$ 
+Prove the odds ratio (or log of odds ratio) across all stratum $k$ 
 $$
 \log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}}
 $$
 
 is a constant, i.e., the estimated effect of the interaction term "i:j" in the uniform association model 
+
+**Solution**
+ 
+\begin{eqnarray*}
+\log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} &=& \log{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}} - \log{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} \\
+&=& \log\mathbb{E}Y_{11k} + \log\mathbb{E}Y_{22k} - \log\mathbb{E}Y_{12k} - \log\mathbb{E}Y_{21k} \\
+&=& \log n + \log p_{i=1} + \log p_{j=1} + \log p_k + \log p_{11} + \log p_{1k} + \log p_{1k} \\
++ \log n + \log p_2 + \log p_2 + \log p_k + \log p_{22} + \log p_{2k} + \log p_{2k} \\
+- \log n + \log p_1 + \log p_2 + \log p_k + \log p_{12} + \log p_{1k} + \log p_{2k}) \\
+- \log n + \log p_2 + \log p_1 + \log p_k + \log p_{21} + \log p_{2k} + \log p_{1k}) \\
+\end{eqnarray*}
+
+Most of the terms cancel out resulting in:
+
+$$
+= \log p_{11} + \log p_{22} - \log p_{12} - \log p_{21} = \log \frac{p_{11}p_{22}}{p_{12}p_{21}}
+$$
+which is not dependent on $k$, so the log-odds is constant in all stratum $k$. 

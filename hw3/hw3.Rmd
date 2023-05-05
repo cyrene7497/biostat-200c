@@ -84,11 +84,63 @@ $$
 $$
 Show $\mathbb{E}Y = \mu = rp / (1 - p)$ and $\operatorname{Var} Y = r p / (1 - p)^2$.
 
+### Expectation of negative binomial 
+
 \begin{eqnarray*}
 \mathbb{E}Y &=& \sum_{y=0}^\infty y \binom{y + r - 1}{r - 1} (1 - p)^r p^y \\
 &=& \sum_{y=0}^\infty y \binom{y + r - 1}{y} (1 - p)^r p^y \\
 &=& \sum_{y=1}^\infty \frac{(y + r - 1)!}{(y - 1)!(r - 1)!} (1 - p)^r p^y \\
+&=& \sum_{y=1}^\infty \binom{y + r -1}{y - 1} (1 - p)^r p^y \\
+\end{eqnarray*}
 
+If we re-parameterize $z = y - 1$, the sum becomes:
+
+\begin{eqnarray*}
+\mathbb{E}Y &=& \sum_{z=0}^\infty r \binom{r + z}{z} (1 - p)^r p^{z+1} \\
+&=& \frac{rp}{p - 1} \sum_{z=0}^\infty \binom{(r + 1) + z - 1}{z} (1 - p)^{r + 1} p^z
+&=& \frac{rp}{p - 1} = \mu
+\end{eqnarray*}
+
+because everything inside the summation is another negative binomial pmf, so the sum over $z = 0$ to $\infty$ is $1$.
+
+### Variance of negative binomial 
+
+\begin{eqnarray*}
+\mathbb{E}(Y^2) &=& \sum_{y=0}^\infty y^2 \binom{y + r - 1}{r - 1} (1 - p)^r p^y \\
+&=& \sum_{y=0}^\infty y^2 \binom{y + r - 1}{y} (1 - p)^r p^y \\
+&=& \sum_{y=1}^\infty y^2 \frac{(y + r - 1)!}{y! (r - 1)!} (1 - p)^r p^y \\
+&=& \sum_{y=1}^\infty y \frac{(y + r -1)!}{(y - 1)! (r - 1)!} (1 - p)^r p^y \\
+&=& \sum_{y = 0}^\infty (y + 1) \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} \\
+&=& \sum_{y = 0}^\infty y \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} + \sum_{y = 0}^\infty \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} \\
+&=& \sum_{y = 1}^\infty \frac{(y + r)!}{(y - 1)! (r - 1)!} (1 - p)^r p^{y+1} + \sum_{y = 0}^\infty \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} \\
+&=& \sum_{y = 0}^\infty \frac{(y + r + 1)!}{y! (r - 1)!} (1 - p)^r p^{y+2} + \sum_{y = 0}^\infty \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} \\
+\end{eqnarray*}
+
+We can then solve each term individually. 
+First term:
+
+\begin{eqnarray*}
+\sum_{y = 0}^\infty \frac{(y + r + 1)!}{y! (r - 1)!} (1 - p)^r p^{y+2} &=& \sum_{y = 0}^\infty \frac{(y - 1 + r + 2)!}{y! (r - 1)!}(1 - p)^r p^{y+2} \\
+&=& \sum_{y = 0}^\infty \frac{(y - 1 + r + 2)!}{y! (r - 1)!} \frac{(r + 2 - 1)!}{(r + 2 - 1)!}(1 - p)^r p^{y+2} \\
+&=& \frac{(r + 1)!p^2}{(r - 1)!(1 - p)^2} \sum_{y = 0}^\infty \binom{r + 2 + y - 1}{y}(1 - p)^{r + 2}p^y \\
+&=& r (r - 1)(\frac{p}{1 - p})^2
+\end{eqnarray*}
+
+Second term:
+
+\begin{eqnarray*}
+\sum_{y = 0}^\infty \frac{(y + r)!}{y! (r - 1)!} (1 - p)^r p^{y+1} &=& \sum_{y = 0}^\infty \frac{(r + 1 + y - 1)!}{y!(r - 1)!}(1 - p)^r p^{y+1} \\
+&=& \sum_{y = 0}^\infty \frac{(r + 1 + y - 1)!}{y!(r - 1)!}\frac{(r + 1 - 1)!}{(r + 1 - 1)!}(1 - p)^r p^{y+2} \\
+&=& \frac{rp}{1 - p} \sum_{y = 0}^\infty \binom{r + 1 + y - 1}{y}(1 - p)^{r+1} p^{y} \\
+&=& \frac{rp}{1 - p}
+\end{eqnarray*}
+
+Then also using the expectation we calculated earlier $\mathbb{E}Y = \mu = rp / (1 - p)$, we can compute the variance:
+
+\begin{eqnarray*}
+\operatorname{Var} Y &=& \mathbb{E}(Y^2) - (\mathbb{E}Y)^2 \\
+&=& (r (r - 1)(\frac{p}{1 - p})^2 + \frac{rp}{1 - p}) - (\frac{rp}{1 - p})^2 \\
+&=& \frac{rp}{(1 - p)^2}
 \end{eqnarray*}
 
 ## Q3. ELMR Chapter 5 Exercise 5 (page 100)

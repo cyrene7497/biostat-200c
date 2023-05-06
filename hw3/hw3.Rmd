@@ -188,6 +188,29 @@ ggplot(dvisits1, aes(x=chronic, y=doctorco)) + geom_bar(position = "dodge", stat
 ```
 On average, those with chronic conditions who are also limited in activity have more doctor appointments than those with chronic conditions without limited activity, and even more than those without chronic conditions. There seems to be a progressive trend. 
 
+### 5.3 
+Build a Poisson regression model with `doctorco` as the response and `sex`, `age`, `agesq`, `income`, `levyplus`, `freepoor`, `freerepa`, `illness`, `actdays`, `hscore` and the three-level condition factor (`chronic`) as possible predictor variables. Considering the deviance of this model, does this model fit the data?
+```{r}
+library(gtsummary)
+modp <- glm(doctorco ~ sex + age + agesq + income + levyplus + freepoor + freerepa + illness + actdays + hscore + chronic, family = poisson, data = dvisits1)
+modp %>%
+  tbl_regression(exponentiate = TRUE) %>%
+  add_glance_table(include = c(deviance, df.residual))
+summary(modp)
+```
+Since the deviance is lower than the residual degrees of freedom, it seems that the model does generally fit the data. 
+
+### 5.4
+Plot the residuals and the fitted values — why are there lines of observations on the plot? Make a QQ plot of the residuals and comment.
+```{r}
+dvisits1 %>%
+  mutate(devres  = residuals(modp, type = "deviance"), 
+         linpred = predict(modp, type = "link")) %>%
+  ggplot + 
+  geom_point(mapping = aes(x = linpred, y = devres)) + 
+  labs(x = "Linear predictor", y = "Deviance residual")
+```
+
 ## Q4. Uniform association 
 plug in counts and will see that its not dependent on k anymore
 For the uniform association when all two-way interactions are included, i.e., 

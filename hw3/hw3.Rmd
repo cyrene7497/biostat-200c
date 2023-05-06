@@ -155,6 +155,39 @@ predict function specify response gives you fitted values. if you specify someth
 predprob = predict(lmod, type = "response"), 
 linpred  = predict(lmod, type = "link" linear predictor
 
+The `dvisits` data comes from the Australian Health Survey of 1977–1978 and consist of 5190 single adults where young and old have been oversampled.
+
+```{r}
+library(faraway)
+dvisits %>%
+ head(5)
+```
+
+### 5.1 
+Make plots which show the relationship between the response variable, `doctorco`, and the potential predictors, `age` and `illness`.
+```{r}
+library(ggplot2)
+plot1 <- ggplot(dvisits, aes(x=as_factor(age*100), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
+plot2 <- ggplot(dvisits, aes(x=as.factor(illness), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
+grid.arrange(plot1, plot2, ncol = 2)
+```
+It appears that the average number of consultation with a doctor or specian in the past 2 weeks (`doctorco`) increases with `age` and with the number of illnesses in the past 2 weeks (`illness`).
+
+### 5.2
+Combine the predictors `chcond1` and `chcond2` into a single three-level factor. Make an appropriate plot showing the relationship between this factor and the response. Comment.
+```{r}
+library(dplyr)
+dvisits1 <- dvisits %>%
+  mutate(chronic = case_when(
+    chcond1 == 1 ~ "Not limited",
+    chcond2 == 1 ~ "Limited",
+    .default = "No chronic"
+  )) 
+dvisits1$chronic <- as_factor(dvisits1$chronic)
+ggplot(dvisits1, aes(x=chronic, y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
+```
+On average, those with chronic conditions who are also limited in activity have more doctor appointments than those with chronic conditions without limited activity, and even more than those without chronic conditions. There seems to be a progressive trend. 
+
 ## Q4. Uniform association 
 plug in counts and will see that its not dependent on k anymore
 For the uniform association when all two-way interactions are included, i.e., 
@@ -175,9 +208,9 @@ is a constant, i.e., the estimated effect of the interaction term "i:j" in the u
 \log \frac{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}}{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} &=& \log{\mathbb{E}Y_{11k}\mathbb{E}Y_{22k}} - \log{\mathbb{E}Y_{12k}\mathbb{E}Y_{21k}} \\
 &=& \log\mathbb{E}Y_{11k} + \log\mathbb{E}Y_{22k} - \log\mathbb{E}Y_{12k} - \log\mathbb{E}Y_{21k} \\
 &=& \log n + \log p_{i=1} + \log p_{j=1} + \log p_k + \log p_{11} + \log p_{1k} + \log p_{1k} \\
-+ \log n + \log p_2 + \log p_2 + \log p_k + \log p_{22} + \log p_{2k} + \log p_{2k} \\
-- \log n + \log p_1 + \log p_2 + \log p_k + \log p_{12} + \log p_{1k} + \log p_{2k}) \\
-- \log n + \log p_2 + \log p_1 + \log p_k + \log p_{21} + \log p_{2k} + \log p_{1k}) \\
+&\quad& + \log n + \log p_2 + \log p_2 + \log p_k + \log p_{22} + \log p_{2k} + \log p_{2k} \\
+&\quad& - (\log n + \log p_1 + \log p_2 + \log p_k + \log p_{12} + \log p_{1k} + \log p_{2k}) \\
+&\quad& - (\log n + \log p_2 + \log p_1 + \log p_k + \log p_{21} + \log p_{2k} + \log p_{1k}) \\
 \end{eqnarray*}
 
 Most of the terms cancel out resulting in:

@@ -159,6 +159,8 @@ The `dvisits` data comes from the Australian Health Survey of 1977–1978 and co
 
 ```{r}
 library(faraway)
+library(dplyr)
+library(ggplot2)
 dvisits %>%
  head(5)
 ```
@@ -166,10 +168,10 @@ dvisits %>%
 ### 5.1 
 Make plots which show the relationship between the response variable, `doctorco`, and the potential predictors, `age` and `illness`.
 ```{r}
-library(ggplot2)
-plot1 <- ggplot(dvisits, aes(x=as_factor(age*100), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
-plot2 <- ggplot(dvisits, aes(x=as.factor(illness), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
-grid.arrange(plot1, plot2, ncol = 2)
+ggplot(dvisits, aes(x=doctorco)) + geom_histogram()
+(plot1 <- ggplot(dvisits, aes(x=as.factor(age*100), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun = "mean"))
+(plot2 <- ggplot(dvisits, aes(x=as.factor(illness), y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun = "mean"))
+#grid.arrange(plot1, plot2, ncol = 2)
 ```
 It appears that the average number of consultation with a doctor or specian in the past 2 weeks (`doctorco`) increases with `age` and with the number of illnesses in the past 2 weeks (`illness`).
 
@@ -183,8 +185,8 @@ dvisits1 <- dvisits %>%
     chcond2 == 1 ~ "Limited",
     .default = "No chronic"
   )) 
-dvisits1$chronic <- as_factor(dvisits1$chronic)
-ggplot(dvisits1, aes(x=chronic, y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun.y = "mean")
+dvisits1$chronic <- as.factor(dvisits1$chronic)
+ggplot(dvisits1, aes(x=chronic, y=doctorco)) + geom_bar(position = "dodge", stat = "summary", fun = "mean")
 ```
 On average, those with chronic conditions who are also limited in activity have more doctor appointments than those with chronic conditions without limited activity, and even more than those without chronic conditions. There seems to be a progressive trend. 
 
@@ -196,7 +198,6 @@ modp <- glm(doctorco ~ sex + age + agesq + income + levyplus + freepoor + freere
 modp %>%
   tbl_regression(exponentiate = TRUE) %>%
   add_glance_table(include = c(deviance, df.residual))
-summary(modp)
 ```
 Since the deviance is lower than the residual degrees of freedom, it seems that the model does generally fit the data. 
 
@@ -210,9 +211,57 @@ dvisits1 %>%
   geom_point(mapping = aes(x = linpred, y = devres)) + 
   labs(x = "Linear predictor", y = "Deviance residual")
 ```
+There are lines in the fitted-residuals plot because the dependent variable `doctorco` is discrete. Every case of the values of `doctorco` has a prediction. The lines curve because the x-axis is the log scale. As `doctorco` varies, the curves rise by integral amounts. Exponentiating them gives a set of quasi-parallel curves.
+```{r}
+qqnorm(modp$residuals)
+halfnorm(hatvalues(modp))
+dvisits1 %>%
+  slice(c(739, 2404))
+```
+The QQ plot is not ideal because we don't expect to have a normal distribution in this case. The halfnormal plot indicates some potential outliers.
+
+### 5.5
+Use a step-wise AIC-based model selection method. What sort of person would be predicted to visit the doctor the most under your selected model?
+```{r}
+(modp2 <- step(modp, trace = FALSE))
+```
+According to the signs of the coefficients, the type of person predicted to visit the doctor the most under the model selected by AIC is someone who is female, older, covered by private health insurance fund (though this doesn't seem to impact that much), has a higher number of illnesses in the past 2 weeks, increased number of days of reduced activity in the past weeks due to illness or injury, with a higher score on a health questionnaire using the Goldberg method, and with some kind of chronic condition whether it limits activity or not. An increase in income seems to be related to going to the doctor less often than otherwise.
+
+### 5.6
+For the last person in the dataset, compute the predicted probability distribution for their visits to the doctor, i.e., give the probability they visit 0, 1, 2, etc. times.
+```{r}
+(l <- dvisits1 %>% slice(5190)) # last person in the data set
+dpois(0, predict(modp, data.frame(l), type = "response")) # probability that this person visits the doctor 0 times
+dpois(1, predict(modp, data.frame(l), type = "response")) # P visit 1 time ...
+dpois(2, predict(modp, data.frame(l), type = "response"))
+dpois(3, predict(modp, data.frame(l), type = "response"))
+dpois(4, predict(modp, data.frame(l), type = "response"))
+dpois(5, predict(modp, data.frame(l), type = "response"))
+```
+### 5.7
+
+Tabulate the frequencies of the number of doctor visits. Compute the expected frequencies of doctor visits under your most recent model. Compare the observed with the expected frequencies and comment on whether it is worth fitting a zero-inflated count model.
+```{r}
+dvisits1 %>% count(doctorco)
+ppred <- predict(modp, dvisits1, type = "response")
+dvisits1 <- dvisits1 %>% mutate(prediction = ppred)
+(p1 <- ggplot(dvisits1, aes(x=doctorco, y = ppred)) + geom_point())
+```
+Since there are so many zeroes, it's worth it to fit the zero-inflated model. 
+
+### 5.8 
+Fit a comparable (Gaussian) linear model and graphically compare the fits.
+Describe how they differ.
+```{r}
+lm <- lm(doctorco ~ sex + age + income + levyplus + freepoor + illness + actdays + hscore + chronic, dvisits1)
+lpred <- predict(lm, dvisits1, type = "response")
+dvisits1 <- dvisits1 %>% mutate(prediction2 = lpred)
+(p2 <- ggplot(dvisits1, aes(x=doctorco, y = lpred)) + geom_point())
+```
+There appears to be a wider range of predictions for every value of `doctorco` in this linear model than in the Poisson model. 
 
 ## Q4. Uniform association 
-plug in counts and will see that its not dependent on k anymore
+
 For the uniform association when all two-way interactions are included, i.e., 
 $$
 \log \mathbb{E}Y_{ijk} = \log p_{ijk} = \log n + \log p_i + \log p_j + \log p_k + \log p_{ij} + \log p_{ik} + \log p_{jk}.

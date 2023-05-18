@@ -143,6 +143,7 @@ because
 \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi)
 \end{eqnarray*}
 
+For the Hessian, 
 
 GLM notes hw4 hint. the key is trying to understand the relationship between mu and sigma i squ. the systematic component eta equals xB. mu is a function of eta. in logistic regression mu = e^xb/1+e^xB. mu func of eta, eta a func of beta. take that into consideration when you do the derivative. in the hint i didn't take the cannonic link into consideration. these derivations are based on not using the cannonic link. 
 der log likelihood w respect to beta. theta is one parameter in exp family. the first step is derivative w respect to beta but a(phi) is a constant and the second term is gone. def first w respect to theta, then der of theta w respect to beta. first w respect to theta, then beta. then need a relationship to have a direct relationship w beta. theta w respect to mu. my is a functino of eta which is a function of beta. 
@@ -154,20 +155,46 @@ taking the seconf deri gives.. the second term can be the same as the third term
 Data is generated from the exponential distribution with density $f(y) = \lambda e^{-\lambda y}$ where $\lambda, y > 0$. 
 
 ### 1a 
-Identify the specific form of q,f,a(),b() and c() for the exponential distribu- tion.
+Identify the specific form of $\theta, \phi, a() , b()$ and $c()$ for the exponential distribution.
+
+The exponential distribution is a special case of the gamma distribution. 
+\begin{eqnarray*}
+f(y) = e^{- \lambda y + \log{\lambda}}
+\end{eqnarray*}
+so
+\begin{eqnarray*}
+\theta = - \lambda, b(\theta) = - \log\lambda = -\log(-\theta) \\
+\phi = 1, a(\phi) = 1, c(y, \phi) = 0
+\end{eqnarray*}
 
 ### 1b
+
 What is the canonical link and variance function for a GLM with a response following the exponential distribution?
+\begin{eqnarray*}
+b'(\theta) = \frac{d}{d \theta} [- \log(- \theta)] = -\frac{1}{\theta} \\
+\mathbb{E}Y = -\frac{1}{\theta} = \frac{1}{\lambda} = \mu
+\end{eqnarray*}
+The canonical form expresses $\theta$ as a function of $\mu$ so $\theta(\mu) = -\frac{1}{\mu}$
+\begin{eqnarray*}
+\operatorname{Var}Y &=& b''(\theta) a(\phi) = \frac{d}{d \theta} [- \frac{1}{\theta}] = \frac{1}{\theta^2} = \mu^2
+\end{eqnarray*}
 
 ### 1c
 Identify a practical difficulty that may arise when using the canonical link in this instance.
 
+In this case, modeling the canonical link as a linear combination of predictors can result in a negative mean.
+
 ### 1d
-When comparing nested models in this case, should an F or c2 test be used? Explain.
+When comparing nested models in this case, should an F or $\chi^2$ test be used? Explain.
+
+The dispersion parameter $\phi = 1$. We can compare the models using the deviance test with $\chi^2$ as the reference distribution. The F test is used when the dispersion is estimated, but in this case we know the dispersion.
 
 ### 1e
-Express the deviance in this case in terms of the responses yi and the fitted values μˆi.
+Express the deviance in this case in terms of the responses $y_i$ and the fitted values $\hat{\mu}_i$.
 
+\begin{eqnarray*}
+D &=& 2 \sum(\frac{y_i-\hat{\mu}_i}{\hat{\mu}_i} - \log\frac{y_i}{\hat{\mu}_i})
+\end{eqnarray*}
 
 ## Q5. ELMR Exercise 8.4 (p172)
 Consider the Galápagos data and model analyzed in this chapter. The purpose of

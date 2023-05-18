@@ -54,12 +54,18 @@ The significance of this predictor now has a p-value of 0.01 which is significan
 
 ### 5d
 Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
+```{r}
+poccf <- polr(ccarduse ~ ., data = debt)
+summary(poccf)
+step(poccf, trace = FALSE)
+```
+
 
 ### 5e
 Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.
 
 ### 5f
-Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a differ- ence to use this type of model?
+Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a difference to use this type of model?
 
 ## Q2. Moments of exponential family distributions
 
@@ -80,4 +86,79 @@ taking the seconf deri gives.. the second term can be the same as the third term
 
 ## Q4. ELMR Exercise 8.1 (p171)
 
-Data is generated from the exponential distribution with density f(y) = l exp(
+Data is generated from the exponential distribution with density $f(y) = \lambda e^{-\lambda y}$ where $\lambda, y > 0$. 
+
+### 1a 
+Identify the specific form of q,f,a(),b() and c() for the exponential distribu- tion.
+
+### 1b
+What is the canonical link and variance function for a GLM with a response following the exponential distribution?
+
+### 1c
+Identify a practical difficulty that may arise when using the canonical link in this instance.
+
+### 1d
+When comparing nested models in this case, should an F or c2 test be used? Explain.
+
+### 1e
+Express the deviance in this case in terms of the responses yi and the fitted values μˆi.
+
+
+## Q5. ELMR Exercise 8.4 (p172)
+Consider the Galápagos data and model analyzed in this chapter. The purpose of
+this question is to reproduce the details of the GLM fitting of this data.
+
+### 4a
+Fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. Report the values of the coef- ficients and the deviance.
+
+### 4b
+For a Poisson GLM, derive h, dh/dμ, V(μ) and the weights to be used in an iteratively fit GLM. What is the form of the adjusted dependent variable here?
+
+### 4c
+Using the observed response as initial values, compute the first stage of the iteration, stopping after the first linear model fit. Compare the coefficients of
+this linear model to those found in the GLM fit. How close are they?
+
+### 4d
+Continue the iteration to get the next h and μ. Use this to compute the current
+value of the deviance. How close is this to the deviance from the GLM?
+
+### 4e
+Compute one more iteration of the GLM fit, reporting the next calculation of
+the coefficients and deviance. How close are these to target now?
+
+### 4f
+Repeattheseiterationsafewmoretimes,computingthedevianceineachtime. Stop when the deviance does not change much. Compare your final estimated
+coefficients to that produced by the GLM fit.
+
+### 4g
+Use your final iterated linear model fit to produce standard errors for the coef-
+ficients. How close are these to that produced by the direct GLM fit?
+
+## Q6. ELMR Exercise 8.5 (p172)
+Again using the Galápagos data, fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. The purpose of this question is to compare six different ways of testing the significance of the elevation predictor, i.e., H0 : bElev = 0. In each case, report the p-value.
+
+### 5a
+Use the z-statistic from the model summary.
+
+### 5b
+Fit a model without elevation and use the difference in deviances to make the
+test.
+
+### 5c
+Use the Pearson Chi-squared statistic in place of the deviance in the previous
+test.
+
+### 5d
+Fit the Poisson model with a free dispersion parameter as described in Sec-
+tion 5.2. Make the test using the model summary.
+
+### 5e
+Use the sandwich estimation method for the standard errors in the original
+model. Use these to compute z-statistics.
+
+### 5f
+Use the robust GLM estimation method and report the test result from the
+summary.
+
+### 5g
+Compare all six results. Pick the best one and justify your choice.

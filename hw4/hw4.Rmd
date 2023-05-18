@@ -90,9 +90,59 @@ Show that the exponential family distributions have moments
   \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi).
 \end{eqnarray*}
 
+
 ## Q3. Score and information matrix of GLM
 
 Derive the gradient (score), negative Hessian, and Fisher information matrix (expected negative Hessian) of GLM.
+
+For GLM, 
+\begin{eqnarray*}
+  \ell(\boldsymbol{\beta}) &=& \sum_{i=1}^n \frac{y_i \theta_i - b(\theta_i)}{a(\phi)} + c(y_i, \phi) \\
+\end{eqnarray*}
+
+The gradient (score) is,
+\begin{eqnarray*}
+\nabla \ell_i(\boldsymbol{\beta}) &=& \frac{y_i - b'(\theta_i)}{a(\phi)} \nabla_{\boldsymbol{\beta}} \theta_i \\
+&=& \frac{y_i - b'(\theta_i)}{a(\phi)} \cdot \frac{d\theta_i}{d\mu_i} \cdot \nabla_{\boldsymbol{\beta}} \mu_i.
+\end{eqnarray*}
+
+because
+\begin{eqnarray*}
+\mathbb{E}Y_i = \mu_i = b'(\theta_i)
+\frac{d \mu_i}{d \theta_i} = b''(\theta_i)
+\end{eqnarray*}
+
+rearranging gives
+\begin{eqnarray*}
+\frac{d \theta_i}{d \mu_i} = \frac{1}{b''(\theta_i)}
+\end{eqnarray*}
+
+And since for GLM
+\begin{eqnarray*}
+g(\mu_i) = \bold{x}_i^T\beta = \eta_i
+\mu_i(\eta_i) = g^{-1}(\eta_i)
+\frac{d \mu_i}{d \eta_i} = \mu_i'(\eta_i)
+\end{eqnarray*}
+
+Furthermore, 
+\begin{eqnarray*}
+\eta_i = \bold{x}_i^T\beta
+\frac{d \eta_i}{d \beta_i} = \bold{x}_i
+\end{eqnarray*}
+
+Combining all these parts and using the chain rule,
+\begin{eqnarray*}
+\frac{d \ell}{d \beta} = \frac{d \ell}{d \theta_i} \cdot \frac{d theta_i}{d \mu_i} \cdot \frac{d mu_i}{d \eta_i} \cdot \frac{d \eta_i}{d \beta} \\
+\nabla \ell_i(\boldsymbol{\beta}) &=& \frac{y_i - b'(\theta_i)}{a(\phi)} \cdot \frac{1}{b''(\theta_i)} \cdot \mu_i'(\eta_i) \cdot \bold{x}_i \\
+&=& \frac{(y_i - \mu_i) \mu_i'(\eta_i)}{\sigma_i^2}\bold{x}_i 
+\end{eqnarray*}
+
+because
+\begin{eqnarray*}
+\mu = b'(\theta)
+\operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi)
+\end{eqnarray*}
+
 
 GLM notes hw4 hint. the key is trying to understand the relationship between mu and sigma i squ. the systematic component eta equals xB. mu is a function of eta. in logistic regression mu = e^xb/1+e^xB. mu func of eta, eta a func of beta. take that into consideration when you do the derivative. in the hint i didn't take the cannonic link into consideration. these derivations are based on not using the cannonic link. 
 der log likelihood w respect to beta. theta is one parameter in exp family. the first step is derivative w respect to beta but a(phi) is a constant and the second term is gone. def first w respect to theta, then der of theta w respect to beta. first w respect to theta, then beta. then need a relationship to have a direct relationship w beta. theta w respect to mu. my is a functino of eta which is a function of beta. 

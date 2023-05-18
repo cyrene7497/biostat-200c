@@ -41,7 +41,7 @@ summary(pocc)
 exp(pocc$coef[1])
 exp(pocc$coef[6])
 ```
-The two most significant predictors are `incomegp` (income group) and `bankacc` (whether or not the respondent has a bank account). The least significant predictor is `house` (the security of housing tenure). The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 1.6 when income group increases one level. The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 8.18 when an individual has a bank account as compared to not having a bank account. 
+The two most significant predictors are `incomegp` (income group) and `bankacc` (whether or not the respondent has a bank account). The least significant predictor is `house` (the security of housing tenure). The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 1.6 $(e^{0.47131})$ when income group increases one level. The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 8.18 when an individual has a bank account as compared to not having a bank account. 
 
 ### 5c
 Fit a proportional odds model using only the least significant predictor from the previous model. What is the significance of this predictor in this small model? Are the conclusions regarding this predictor contradictory for the two models?
@@ -55,11 +55,11 @@ The significance of this predictor now has a p-value of 0.01 which is significan
 ### 5d
 Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
 ```{r}
-poccf <- polr(ccarduse ~ ., data = debt)
-summary(poccf)
+debt2 <- debt %>% drop_na()
+poccf <- polr(ccarduse ~ ., data = debt2)
 step(poccf, trace = FALSE)
 ```
-
+By step-wise AIC selection, six variables were dropped. The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of exp(0.4588585) = 1.58 when moving up one group in `incomegp`. The odds of moving from one level of credit card use to the next increases by a factor of exp(0.2695623) = 1.309391 when `agegp` increases. Having a bank account (`bankacc`) increases the odds of moving from one level of credit card use to the next by a factor of exp(2.0815757) = 8.01 times. The odds of moving from one level of credit card use to the next increases by a factor of exp(0.5047742) = 1.65 when the responded has a building society account (`bsocacc`). Buying cigarettes (`cigbuy`) decreases the odds of moving from one level of credit card use to the next by a factor of exp(-0.7677124) = 0.4640735 or decreases by 54%. Scoring higher on the scale of attitude toward debt increases the odds of moving from one level of credit card use to the next by a factor of exp(0.5635449) = 1.756889. This does not mean that the predictors dropped from the model have no relation to the response. 
 
 ### 5e
 Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.

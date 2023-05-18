@@ -1,0 +1,83 @@
+---
+title: "Biostat 200C Homework 4"
+author: "Cyrene Arputhasamy"
+subtitle: Due May 12  @ 11:59PM
+output: 
+  html_document:
+    toc: true
+    toc_depth: 4
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+```
+
+```{r}
+library(faraway)
+library(dplyr)
+```
+
+## Q1. ELMR Excercise 7.5 (p150)
+The `debt` data arise from a large postal survey on the psychology of debt. The frequency of credit card use is a three-level factor ranging from `never`, through `occasionally` to `regularly`.
+
+### 5a
+Declare the response as an ordered factor and make a plot showing the relationship to `prodebt`. Comment on the plot. Use a table or plot to display the relationship between the response and the income group.
+```{r}
+debt$ccarduse <- ordered(debt$ccarduse, levels = c(1, 2, 3))
+library(ggplot2)
+ggplot(debt, aes(x = ccarduse, y = prodebt)) + geom_boxplot()
+ggplot(debt, aes(x = ccarduse, y = incomegp)) + geom_boxplot()
+debt %>%
+  xtabs( ~ ccarduse + incomegp, .)
+```
+There is a little variability in `prodebt` across groups of card use. There is a general trend that those scoring high in `prodebt`, having a general favorable attitude to debt, score higher in credit card use. It also seems that those with high credit card use are generally in higher income groups. 
+
+### 5b
+Fit a proportional odds model for credit card use with all the other variables as predictors. What are the two most significant predictors (largest t-values) and what is their qualitative effect on the response? What is the least significant predictor?
+```{r}
+library(MASS)
+pocc <- polr(ccarduse ~ ., data = debt)
+summary(pocc)
+exp(pocc$coef[1])
+exp(pocc$coef[6])
+```
+The two most significant predictors are `incomegp` (income group) and `bankacc` (whether or not the respondent has a bank account). The least significant predictor is `house` (the security of housing tenure). The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 1.6 when income group increases one level. The odds of moving from `never` to `occassional` credit card use **or** from `occasional` to `regularly` using a credit card increases by a factor of 8.18 when an individual has a bank account as compared to not having a bank account. 
+
+### 5c
+Fit a proportional odds model using only the least significant predictor from the previous model. What is the significance of this predictor in this small model? Are the conclusions regarding this predictor contradictory for the two models?
+```{r}
+pocc2 <- polr(ccarduse ~ house, data = debt)
+summary(pocc2)
+pt(3.895, 3, lower.tail = FALSE)
+```
+The significance of this predictor now has a p-value of 0.01 which is significant. This is contradictory to the previous model. 
+
+### 5d
+Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
+
+### 5e
+Compute the median values of the predictors in your selected model. At these median values, contrast the predicted outcome probabilities for both smokers and nonsmokers.
+
+### 5f
+Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a differ- ence to use this type of model?
+
+## Q2. Moments of exponential family distributions
+
+Show that the exponential family distributions have moments
+\begin{eqnarray*}
+  \mathbb{E}Y &=& \mu = b'(\theta) \\
+  \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi).
+\end{eqnarray*}
+
+## Q3. Score and information matrix of GLM
+
+Derive the gradient (score), negative Hessian, and Fisher information matrix (expected negative Hessian) of GLM.
+
+GLM notes hw4 hint. the key is trying to understand the relationship between mu and sigma i squ. the systematic component eta equals xB. mu is a function of eta. in logistic regression mu = e^xb/1+e^xB. mu func of eta, eta a func of beta. take that into consideration when you do the derivative. in the hint i didn't take the cannonic link into consideration. these derivations are based on not using the cannonic link. 
+der log likelihood w respect to beta. theta is one parameter in exp family. the first step is derivative w respect to beta but a(phi) is a constant and the second term is gone. def first w respect to theta, then der of theta w respect to beta. first w respect to theta, then beta. then need a relationship to have a direct relationship w beta. theta w respect to mu. my is a functino of eta which is a function of beta. 
+
+taking the seconf deri gives.. the second term can be the same as the third term. use the relationship to take another deriv. sigma i sq so when you take another der by chair rule you can show it gives you another dsigma sq. take another def from the last term and plug into mu'' and get the same as the second term. 
+
+## Q4. ELMR Exercise 8.1 (p171)
+
+Data is generated from the exponential distribution with density f(y) = l exp(

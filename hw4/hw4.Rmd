@@ -70,10 +70,17 @@ debt2 %>%
 predict(poccf2, data.frame(incomegp = 3, agegp = 2, bankacc = 1, bsocacc = 1, cigbuy = 0, prodebt = 3.18), type = "probs")
 predict(poccf2, data.frame(incomegp = 3, agegp = 2, bankacc = 1, bsocacc = 1, cigbuy = 1, prodebt = 3.18), type = "probs")
 ```
-The predicted outcome probabilities for never using a credit card (level 1) is .42 for non smokers and .61 for smokers. The predicted probability of occassionally using a credit card is lower for smokers than non-smokers at .25 compared to .32. The predicted probability of regularly using a credit card is .24 for non-smokers and .13 for smokers. 
+The predicted outcome probabilities for never using a credit card (level 1) is .42 for non smokers and .61 for smokers. The predicted probability of occasionally using a credit card is lower for smokers than non-smokers at .25 compared to .32. The predicted probability of regularly using a credit card is .24 for non-smokers and .13 for smokers. 
 
 ### 5f
 Fit a proportional hazards model to the same set of predictors and recompute the two sets of probabilities from the previous question. Does it make a difference to use this type of model?
+```{r}
+phcc <- polr(ccarduse ~ incomegp + agegp + bankacc + bsocacc + cigbuy + prodebt, method = "cloglog", data = debt2)
+predict(phcc, data.frame(incomegp = 3, agegp = 2, bankacc = 1, bsocacc = 1, cigbuy = 0, prodebt = 3.18), type = "probs")
+predict(phcc, data.frame(incomegp = 3, agegp = 2, bankacc = 1, bsocacc = 1, cigbuy = 1, prodebt = 3.18), type = "probs")
+```
+Fitting the model as a proportional hazards model only slightly changed the predicted probabilities in this example. It doesn't seem to make a difference to use this type of model.
+
 
 ## Q2. Moments of exponential family distributions
 

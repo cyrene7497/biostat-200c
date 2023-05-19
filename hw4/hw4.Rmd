@@ -340,6 +340,14 @@ The model without `Elevation` has an even smaller p-value than with `Elevation` 
 ### 5d
 Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.
 
+```{r}
+dp <- sum(residuals(pm, type = "pearson")^2)/pm$df.residual
+dp2 <- sum(residuals(pm2, type = "pearson")^2)/pm2$df.residual
+summary(pm, dispersion = dp)
+summary(pm2, dispersion = dp2)
+```
+`Elevation` is still significant with the free dispersion parameter. 
+
 ### 5e
 Use the sandwich estimation method for the standard errors in the original
 model. Use these to compute z-statistics.

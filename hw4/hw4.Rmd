@@ -304,22 +304,41 @@ The standard error was lower for all the estimated coefficients in the GLM. They
 
 
 ## Q6. ELMR Exercise 8.5 (p172)
-Again using the Galápagos data, fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. The purpose of this question is to compare six different ways of testing the significance of the elevation predictor, i.e., H0 : bElev = 0. In each case, report the p-value.
+Again using the Galápagos data, fit a Poisson model to the species response with the five geographic variables as predictors. Do not use the endemics variable. The purpose of this question is to compare six different ways of testing the significance of the elevation predictor, i.e., $H_0 : \beta_{Elev} = 0$. In each case, report the p-value.
 
 ### 5a
+
 Use the z-statistic from the model summary.
+```{r}
+summary(pm)$coefficients[,4]
+```
+
+The p-value for `Elevation` is essentially 0 and thus us significant.
 
 ### 5b
-Fit a model without elevation and use the difference in deviances to make the
-test.
+Fit a model without elevation and use the difference in deviances to make the test.
+```{r}
+pm2 <- glm(Species ~ . - Endemics - Elevation, family = poisson, data = gala)
+summary(pm2)
+pchisq(deviance(pm2) - deviance(pm), pm$df - pm2$df, lower = F)
+```
+The p-value is also essentially zero so we can conclude that `Elevation` improves the model fit and is significant.
 
 ### 5c
-Use the Pearson Chi-squared statistic in place of the deviance in the previous
-test.
+Use the Pearson Chi-squared statistic in place of the deviance in the previous test.
+```{r}
+px2 <- sum(residuals(pm, type = "pearson")^2)
+pchisq(px2, pm$df.residual, lower.tail = FALSE)
+```
+The small p-value indicates that the model doesn't fit the data well. 
+```{r}
+px2.1 <- sum(residuals(pm2, type = "pearson")^2)
+pchisq(px2.1, pm2$df.residual, lower.tail = FALSE)
+```
+The model without `Elevation` has an even smaller p-value than with `Elevation` so the model without `Elevation` fits worse than when it is included in the model.
 
 ### 5d
-Fit the Poisson model with a free dispersion parameter as described in Sec-
-tion 5.2. Make the test using the model summary.
+Fit the Poisson model with a free dispersion parameter as described in Section 5.2. Make the test using the model summary.
 
 ### 5e
 Use the sandwich estimation method for the standard errors in the original

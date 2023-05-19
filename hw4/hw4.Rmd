@@ -55,6 +55,7 @@ The significance of this predictor now has a p-value of 0.01 which is significan
 ### 5d
 Use stepwise AIC to select a smaller model than the full set of predictors. You will need to handle the missing values carefully. Report on the qualitative effect of the predictors in your chosen model. Can we conclude that the predictors that were dropped from the model have no relation to the response?
 ```{r}
+library(tidyverse)
 debt2 <- debt %>% drop_na()
 poccf <- polr(ccarduse ~ ., data = debt2)
 (poccf2 <- step(poccf, trace = FALSE))
@@ -90,6 +91,24 @@ Show that the exponential family distributions have moments
   \operatorname{Var}Y &=& \sigma^2 = b''(\theta) a(\phi).
 \end{eqnarray*}
 
+Mean:
+\begin{eqnarray*}
+\mathbb{E}Y = \int y f(y|\theta,\phi)dy \\
+\frac{d}{d\theta} f(y|\theta,\phi) = \frac{y - b'(\theta)}{a(\phi)}f(y|\theta, \phi) \\
+\int\frac{d}{d\theta} f(y|\theta,\phi)dy = \frac{1}{a(\phi)}[\mathbb{E}Y - b'(\theta)] = 0 \\
+\mathbb{E}Y - b'(\theta) = ) \\
+\mathbb{E}Y = b'(\theta)
+\end{eqnarray*}
+
+Variance:
+\begin{eqnarray*}
+\int\frac{d^2}{d\theta^2}f(y|\theta,\phi)dy = 0 \\
+\frac{d^2}{d\theta^2}f(y|\theta,\phi) = -\frac{b''(\theta)}{a(\phi)}f(y|\theta,\phi) + [\frac{y - b'(\theta)}{a(\phi)}]^2 f(y|\theta,\phi) \\
+\int\frac{d^2}{d\theta^2}f(y|\theta,\phi)dy = \int (-\frac{b''(\theta)}{a(\phi)}f(y|\theta,\phi) + [\frac{y - b'(\theta)}{a(\phi)}]^2 f(y|\theta,\phi))dy = 0 \\
+-\frac{b''(\theta)}{a(\phi)}f(y|\theta,\phi) + \frac{1}{(a(\phi))^2} \operatorname{Var}Y = 0 \\
+\frac{b''(\theta)}{a(\phi)}f(y|\theta,\phi) = \frac{\operatorname{Var}Y}{(a(\phi))^2} \\
+\operatorname{Var}Y = b''(\theta)a(\phi) \\
+\end{eqnarray*}
 
 ## Q3. Score and information matrix of GLM
 
@@ -351,10 +370,24 @@ summary(pm2, dispersion = dp2)
 ### 5e
 Use the sandwich estimation method for the standard errors in the original
 model. Use these to compute z-statistics.
+```{r}
+library(sandwich)
+glm(Species ~ . - Endemics, family = poisson, data = gala) %>%
+  vcovHC() %>%
+  diag() %>%
+  sqrt()
+```
+
+The standard errors of the regression coefficients are quite similar to the previous model with the dispersion parameter.
 
 ### 5f
 Use the robust GLM estimation method and report the test result from the
 summary.
+```{r}
+library(robust)
+rbm <- glmRob(Species ~ . - Endemics, family = poisson, gala)
+summary(rbm)
+```
 
 ### 5g
 Compare all six results. Pick the best one and justify your choice.

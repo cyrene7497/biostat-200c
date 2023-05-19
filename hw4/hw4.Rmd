@@ -138,22 +138,22 @@ rearranging gives
 
 And since for GLM
 \begin{eqnarray*}
-g(\mu_i) = \bold{x}_i^T\beta = \eta_i
+g(\mu_i) = \mathbf{x}_i^T\beta = \eta_i
 \mu_i(\eta_i) = g^{-1}(\eta_i)
 \frac{d \mu_i}{d \eta_i} = \mu_i'(\eta_i)
 \end{eqnarray*}
 
 Furthermore, 
 \begin{eqnarray*}
-\eta_i = \bold{x}_i^T\beta
-\frac{d \eta_i}{d \beta_i} = \bold{x}_i
+\eta_i = \mathbf{x}_i^T\beta
+\frac{d \eta_i}{d \beta_i} = \mathbf{x}_i
 \end{eqnarray*}
 
 Combining all these parts and using the chain rule,
 \begin{eqnarray*}
-\frac{d \ell}{d \beta} = \frac{d \ell}{d \theta_i} \cdot \frac{d theta_i}{d \mu_i} \cdot \frac{d mu_i}{d \eta_i} \cdot \frac{d \eta_i}{d \beta} \\
-\nabla \ell_i(\boldsymbol{\beta}) &=& \frac{y_i - b'(\theta_i)}{a(\phi)} \cdot \frac{1}{b''(\theta_i)} \cdot \mu_i'(\eta_i) \cdot \bold{x}_i \\
-&=& \frac{(y_i - \mu_i) \mu_i'(\eta_i)}{\sigma_i^2}\bold{x}_i 
+\frac{d \ell}{d \beta} &=& \frac{d \ell}{d \theta_i} \cdot \frac{d theta_i}{d \mu_i} \cdot \frac{d mu_i}{d \eta_i} \cdot \frac{d \eta_i}{d \beta} \\
+\nabla \ell_i(\boldsymbol{\beta}) &=& \frac{y_i - b'(\theta_i)}{a(\phi)} \cdot \frac{1}{b''(\theta_i)} \cdot \mu_i'(\eta_i) \cdot \mathbf{x}_i \\
+&=& \frac{(y_i - \mu_i) \mu_i'(\eta_i)}{\sigma_i^2}\mathbf{x}_i 
 \end{eqnarray*}
 
 because
@@ -163,11 +163,17 @@ because
 \end{eqnarray*}
 
 For the Hessian, 
+\begin{eqnarray*}
+\nabla_\beta^2(\ell) &=& \sum_i[\frac{y_i - \mu_i}{\sigma_i^2} \mu_i'(\eta_i)\mathbf{x}_i]' \\
+&=& \sum_i [\frac{y_i - \mu_i}{\sigma_i^2}\mu_i'(\eta_i)]'x_i x_i^T \\
+&=& \sum_i [ (\frac{y_i - \mu_i}{\sigma_i^2})' \mu_i'(\eta_i) + (\frac{y_i - \mu_i}{\sigma_i^2})(\mu_i'(\eta_i))'] x_i x_i^T \\
+[ (\frac{y_i - \mu_i}{\sigma_i^2})' = \frac{(y_i - \mu_i)'\sigma_i^2 - (y_i - \mu_i)(\sigma_i^2)'}{(\sigma_i^2)^2} \\
+= \frac{-\mu_i(\eta_i)\sigma_i^2 - (y_i - \mu_i) \frac{d \sigma_i^2}{d \mu_i} \mu_i'(\eta_i)}{\sigma_i^4} ] \\
+\Rightarrow &=& \sum_i{\frac{-\mu_i(\eta_i)\sigma_i^2 - (y_i - \mu_i) \frac{d \sigma_i^2}{d \mu_i} \mu_i'(\eta_i)}{\sigma_i^4} \mu_i'(\eta_i) + \frac{y_i - \mu_i}{\sigma_i^2}\mu_i''(\eta_i)} x+i x_i^T \\
+&=& - \sum_i [\frac{-[\mu_i'(\eta_i)]^2}{\sigma_i^2} + \frac{-(y_i - \mu_i) \frac{d\sigma_i^2}{d\mu_i}[\mu_i'(\eta_i)]^2}{\sigma_i^4} + \frac{(y_i - \mu_i)\mu_i''(\eta_i)}{\sigma_i^2}] x_i x_i^T 
+\end{eqnarray*}
 
-GLM notes hw4 hint. the key is trying to understand the relationship between mu and sigma i squ. the systematic component eta equals xB. mu is a function of eta. in logistic regression mu = e^xb/1+e^xB. mu func of eta, eta a func of beta. take that into consideration when you do the derivative. in the hint i didn't take the cannonic link into consideration. these derivations are based on not using the cannonic link. 
-der log likelihood w respect to beta. theta is one parameter in exp family. the first step is derivative w respect to beta but a(phi) is a constant and the second term is gone. def first w respect to theta, then der of theta w respect to beta. first w respect to theta, then beta. then need a relationship to have a direct relationship w beta. theta w respect to mu. my is a functino of eta which is a function of beta. 
-
-taking the seconf deri gives.. the second term can be the same as the third term. use the relationship to take another deriv. sigma i sq so when you take another der by chair rule you can show it gives you another dsigma sq. take another def from the last term and plug into mu'' and get the same as the second term. 
+The Fisher Information matrix is the negative of the above result of the Hessian. 
 
 ## Q4. ELMR Exercise 8.1 (p171)
 
@@ -329,10 +335,12 @@ Again using the Galápagos data, fit a Poisson model to the species response wit
 
 Use the z-statistic from the model summary.
 ```{r}
+summary(pm)
 summary(pm)$coefficients[,4]
+pnorm(summary(pm)$coefficients[,3], lower.tail = FALSE)
 ```
 
-The p-value for `Elevation` is essentially 0 and thus us significant.
+The p-value for `Elevation` is essentially 0 and thus is significant.
 
 ### 5b
 Fit a model without elevation and use the difference in deviances to make the test.
@@ -372,22 +380,25 @@ Use the sandwich estimation method for the standard errors in the original
 model. Use these to compute z-statistics.
 ```{r}
 library(sandwich)
-glm(Species ~ . - Endemics, family = poisson, data = gala) %>%
-  vcovHC() %>%
-  diag() %>%
-  sqrt()
+rbm <- glm(Species ~ . - Endemics, family = poisson, data = gala)
+sqrt(diag(vcovHC(rbm)))
+(zstat <- summary(rbm)$coefficients[,1]/sqrt(diag(vcovHC(rbm))))
+pnorm(zstat, lower.tail = FALSE)
 ```
 
-The standard errors of the regression coefficients are quite similar to the previous model with the dispersion parameter.
+The standard errors of the regression coefficients are quite similar to the previous model with the dispersion parameter. The p-value of `Elevation` is .0015 and is significant.
 
 ### 5f
 Use the robust GLM estimation method and report the test result from the
 summary.
 ```{r}
 library(robust)
-rbm <- glmRob(Species ~ . - Endemics, family = poisson, gala)
+rbm <- glmRob(Species ~ Area +  Elevation + Nearest + Scruz + Adjacent, family = poisson, gala)
 summary(rbm)
 ```
+The summary indicates that all the predictors except for `Adjacent` are significant. The p-value is essentially 0.
 
 ### 5g
 Compare all six results. Pick the best one and justify your choice.
+
+The dispersion method seems the best since it adjusts for the restraint in the Poisson model that the variance should be equal to the mean. It also results in the same predictors being significant as in the original Poisson model. The regression coefficients are also more similar in the dispersion method than in the robust method. The other ways of testing significant didn't also readily report regression coefficients (eg pearson chi-squared or analysis of deviance).

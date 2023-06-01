@@ -249,6 +249,11 @@ summary(ghmod)
 
 ### 13.1i
 (i) Fit the model using GEE. Use an autoregressive rather than exchangeable error structure. Compare the results to the previous model fits. In your model, what indicates that a child who already wheezes is likely to continue to wheeze?
+```{r}
+library(geepack)
+geemod <- geeglm(resp ~ age + smoke, id = id, corstr = "ar1", scale.fix = TRUE, data = ohio, family =binomial(link = "logit"))
+summary(geemod)
+```
 
 ### 13.1j
 (j) What is your overall conclusion regarding the effect of age and maternal smoking? Can we trust the GLM result or are the GLMM models preferable?

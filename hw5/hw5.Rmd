@@ -185,9 +185,24 @@ ohio %>%
   bold_labels()
 ```
 
-
 ### 13.1c
 Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.
+```{r}
+props <- xtabs(~ age + resp + smoke, ohio) %>%
+  as_tibble() 
+props$np <- props$n/537
+props
+props %>%
+  filter(resp == 1) %>%
+  ggplot() +
+  geom_line(aes(x = age, y = np, group = smoke, col = as.factor(smoke))) +
+  theme_pubr() + labs(x = "Age", y = "Proportion",
+                      title = "Proportion of Child Wheezing by Age",
+                      col = "Mother Smoker")
+  scale_color_manual(values = c("0" = "red", "1" = "green"),
+                     labels = c("Mother not a smoker", "Mother smokes"))
+```
+
 
 ### 13.1d
 (d) Group the data by child to count the total (out of four) years of wheezing. Fit a binomial GLM to this response to check for a maternal smoking effect. Does this prove there is a smoking effect or could there be another plausible explanation?

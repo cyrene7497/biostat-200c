@@ -109,6 +109,19 @@ Fit a linear longitudinal model that allows for a random slope and intercept for
  + The interaction between thiouracil and week
  + The intercept random effect SD.
  
+```{r}
+library(tidyverse)
+```
+```{r}
+m1 <- lmer(wt ~ weeks * treat + (weeks | subject), data = ratdrink)
+summary(m1)
+```
++ The fixed effect intercept term : Similarly to GLM, the fixed effects intercept indicates that the average weight of control mice is 52.8 (no units in data sheet) on average.
+
++ The interaction between `thiouracil` and `weeks` : The weight of mice goes down by 9 in thiouracil treated mice as compared to control mice dependent on weeks. 
+
++ The intercept random effect SD : The variability between subjects within a treatment group is 5.7, the random effect intercept SD. 
+ 
 ### 11.1c 
 Check whether there is a significant treatment effect.
 

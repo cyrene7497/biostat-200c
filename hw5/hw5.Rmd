@@ -124,6 +124,12 @@ summary(m1)
  
 ### 11.1c 
 Check whether there is a significant treatment effect.
+```{r}
+library(pbkrtest)
+m2 <- lmer(wt ~ weeks + (weeks | subject), data = ratdrink)
+KRmodcomp(m1, m2)
+```
+The p-value of the F-test indicates that there is a significant effect of the treatment.
 
 ### 11.1d
 Construct diagnostic plots showing the residuals against the fitted values and a QQ plot of the residuals. Interpret.

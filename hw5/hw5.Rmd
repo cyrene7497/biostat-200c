@@ -133,6 +133,16 @@ The p-value of the F-test indicates that there is a significant effect of the tr
 
 ### 11.1d
 Construct diagnostic plots showing the residuals against the fitted values and a QQ plot of the residuals. Interpret.
+```{r}
+plot(resid(m1) ~ fitted(m1), xlab = "Fitted", ylab = "Residuals")
+abline(h = 0 )
+```
+The residuals are mostly scattered about the x-axis with no evidence of homoscedasticity, therefore the assumptions of linearity and equal variance appear reasonably satisfied.
+
+```{r}
+qqnorm(resid(m1), main = "")
+```
+The QQ plot shows that there don't seem to be deviations from the normality assumption.
 
 ### 11.1e
 Construct confidence intervals for the parameters of the model. Which random effect terms may not be significant? Is the thyroxine group significantly different from the control group?

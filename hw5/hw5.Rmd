@@ -203,15 +203,24 @@ props %>%
                      labels = c("Mother not a smoker", "Mother smokes"))
 ```
 
-
 ### 13.1d
 (d) Group the data by child to count the total (out of four) years of wheezing. Fit a binomial GLM to this response to check for a maternal smoking effect. Does this prove there is a smoking effect or could there be another plausible explanation?
+```{r}
+ohiobin <- aggregate(ohio$resp, list(ohio$id), FUN=sum) %>%
+  mutate(not_wheeze = 4 - x) %>%
+  full_join(ohio, by = c("Group.1" = "id"))
+
+glm(cbind(x, not_wheeze) ~ smoke, family = binomial, data = ohiobin) %>%
+  summary()
+```
+
+
 
 ### 13.1e
 (e) Fit a model for each individual response using a GLMM fit using penalized quasi-likelihood. Describe the effects of age and maternal smoking. How do the odds of wheezing change numerically over time?
 
 ### 13.1f
-(f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Com- pare to the previous model fit.
+(f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
 
 ### 13.1g
 (g) Use INLA to fit the same model. What does this model say about the effect of age and maternal smoking?

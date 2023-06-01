@@ -171,10 +171,20 @@ ohio %>%
   dplyr::select(id, smoke) %>%
   n_distinct()
 ```
-There are 536 children, so there should be 536 unique combinations of `id` and `smoke` if the mothers did not change their smoking status. Since there are 537 unique combinations, that means one mother changed her smoking status.
+There are 537 children, so there should be 537 unique combinations of `id` and `smoke` if the mothers did not change their smoking status. Since there are 537 unique combinations, that means no mothers changed her smoking status.
 
 ### 13.1b
 Construct a table that shows proportion of children who wheeze for 0, 1, 2, 3 or 4 years broken down by maternal smoking status.
+```{r}
+xtabs(~ smoke + resp, ohio)
+library(gtsummary)
+ohio %>%
+  tbl_strata(strata = smoke,
+             .tbl_fun = ~ .x %>%
+  tbl_cross(row = resp, col = age, percent = "cell")) %>%
+  bold_labels()
+```
+
 
 ### 13.1c
 Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.

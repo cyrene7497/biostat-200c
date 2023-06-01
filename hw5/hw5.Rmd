@@ -146,6 +146,10 @@ The QQ plot shows that there don't seem to be deviations from the normality assu
 
 ### 11.1e
 Construct confidence intervals for the parameters of the model. Which random effect terms may not be significant? Is the thyroxine group significantly different from the control group?
+```{r}
+confint(m1, method = "boot")
+```
+$\sigma_1$ is the variance of the random intercept, $\sigma_2$ is the covariance of the random intercept and random slope, and $\sigma_3$ is the variance of the random slope. We aren't concerned with $\sigma_2$. The intervals for both $\sigma_1$ and $\sigma_3$ don't include $0$ so they are significant and can remain in the model. The `thyroxine` group might not be significantly different from the `control` group since the interval includes 0.
 
 ## Q4. ELMR Exercise 13.1 (p295)
 The `ohio` data concern 536 children from Steubenville, Ohio and were taken as part of a study on the effects of air pollution. Children were in the study for 4 years from ages 7 to 10. The response was whether they wheezed or not. 

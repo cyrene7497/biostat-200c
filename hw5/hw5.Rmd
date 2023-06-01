@@ -159,9 +159,19 @@ The variables are:
 + `id` an identifier for the child
 + `age` 7yrs = -2, 8yrs = -1, 9yrs = 0, 10yrs = 1
 + `smoke` an indicator of maternal smoking at the first year of the study (1 = smoker, 0 = nonsmoker)
+```{r}
+ohio %>% print(width = Inf)
+```
 
 ### 13.1a
 Do any of the mothers in the study change their smoking status during the period of observation?
+```{r}
+table(ohio$smoke)
+ohio %>%
+  dplyr::select(id, smoke) %>%
+  n_distinct()
+```
+There are 536 children, so there should be 536 unique combinations of `id` and `smoke` if the mothers did not change their smoking status. Since there are 537 unique combinations, that means one mother changed her smoking status.
 
 ### 13.1b
 Construct a table that shows proportion of children who wheeze for 0, 1, 2, 3 or 4 years broken down by maternal smoking status.

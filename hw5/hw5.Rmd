@@ -53,6 +53,22 @@ y_{ij} - \bar{y}_{i \cdot} &=& \epsilon_{ij} - \bar{\epsilon}_{i \cdot} \\
 \sum_{i=1}^a\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2 \right] = \sum^a (n-1)\sigma_\epsilon^2 \\
 &=& a(n-1)\sigma_\epsilon^2
 \end{eqnarray*}
+
++ $\widehat{\sigma}_{\alpha}^2 &=& \frac{\text{SSA}/(a-1) - \widehat{\sigma}_{\epsilon}^2}{n}$
+\begin{eqnarray*}
+\mathbb{E}(SST) &=& \mathbb{E}\left[ \sum^a \sum^n (y_{ij} - \bar{y}_{\cdot \cdot})^2 \right] \\
+\mathbb{E}(SST) &=& \mathbb{E}\left[\sum^a \sum^n (\mu + \alpha_i + \epsilon_{ij} - (\mu + \bar{\alpha} + \bar{\epsilon_{\cdot \cdot}}))^2\right] \\
+&=& \mathbb{E}\left[\sum^a \sum^n ((\alpha_i - \bar{\alpha}) + (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}}))^2\right] \\
+&=& \mathbb{E}\left[\sum^a \sum^n (\alpha_i - \bar{\alpha})^2 \right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
+&=& n\mathbb{E}\left[\sum^a(\alpha_i - \bar{\alpha})^2\right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
+&=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2 \\
+\Rightarrow \mathbb{E}(SSA) = \mathbb{E}(SST) - \mathbb{E}(SSE) \\
+&=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2 - a(n-1)\sigma_{\epsilon}^2 \\
+&=& n(a-1) \sigma\{\alpha}^2 + na\sigma_{\epsilon}^2 - \sigma_{\epsilon}^2 - na\sigma_{\epsilon}^2 + a\sigma_{\epsilon}^2 \\
+&=& n(a-1) \sigma\{\alpha}^2 + (a-1)\sigma_{\epsilon}^2 \\
+&=& (a-1)(n\sigma\{\alpha}^2 + \sigma_{\epsilon}^2)
+\end{eqnarray*}
+
 2. Derive the MLE estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. Hint: write down the log-likelihood and find the maximizer.
 
 3. (**Optional**) Derive the REML estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. 

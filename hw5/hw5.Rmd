@@ -208,18 +208,17 @@ The variables are:
 + `age` 7yrs = -2, 8yrs = -1, 9yrs = 0, 10yrs = 1
 + `smoke` an indicator of maternal smoking at the first year of the study (1 = smoker, 0 = nonsmoker)
 ```{r}
-ohio %>% print(width = Inf)
+ohio %>% head(5)
 ```
 
 ### 13.1a
 Do any of the mothers in the study change their smoking status during the period of observation?
 ```{r}
-table(ohio$smoke)
 ohio %>%
   dplyr::select(id, smoke) %>%
   n_distinct()
 ```
-There are 537 children, so there should be 537 unique combinations of `id` and `smoke` if the mothers did not change their smoking status. Since there are 537 unique combinations, that means no mothers changed her smoking status.
+There are 537 children, so there should be 537 unique combinations of `id` and `smoke` if the mothers did not change their smoking status. Since there are 537 unique combinations, that means no mothers changed her smoking status. If there were mothers who did change their smoking status, there would be more than 537 unique combinations.
 
 ### 13.1b
 Construct a table that shows proportion of children who wheeze for 0, 1, 2, 3 or 4 years broken down by maternal smoking status.
@@ -236,8 +235,8 @@ ohio %>%
 ### 13.1c
 Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.
 ```{r}
-props <- xtabs(~ age + resp + smoke, ohio) %>%
-  as_tibble() 
+(props <- xtabs(~ age + resp + smoke, ohio) %>%
+  as_tibble())
 props$np <- props$n/537
 props
 props %>%
@@ -268,7 +267,7 @@ ohiobin
 glm(cbind(years_wheezed, not_wheeze) ~ smoke, family = binomial, data = ohiobin) %>%
   summary()
 ```
-
+In the binomial model, maternal smoking is significant. This doesn't prove that there's a smoking effect since there could be something confounding the results. 
 
 
 ### 13.1e
@@ -278,7 +277,7 @@ library(MASS)
 pqlmod <- glmmPQL(resp ~ age + smoke, random = ~ 1 | id, family = binomial, data = ohio)
 summary(pqlmod)
 ```
-
+The odds of wheezing decreases by 17% with every year increase in age. (exp(-.1816) = .8339) when the mother of the child was not a smoker. Children with a maternal smoker are found to wheeze 38% more than children who's mom didn't smoke on average, holding age constant. But with `age` in the model, `smoke` is no longer significant. 
 
 ### 13.1f
 (f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
@@ -287,7 +286,7 @@ library(lme4)
 ghmod <- glmer(resp ~ age + smoke + (1 | id), nAGQ = 25, family = binomial, data = ohio)
 summary(ghmod)
 ```
-
+In this model, the odds of wheezing decreases by 22% with every year increase in age. (exp(-.244) = .7835) when the mother of the child was not a smoker. In this case, `smoke` is also not significant as in the last model. The effect of maternal smoking is larger in this model than the previous, but is still not significant. 
 
 ### 13.1g OPTIONAL
 (g) Use INLA to fit the same model. What does this model say about the effect of age and maternal smoking?
@@ -302,6 +301,9 @@ library(geepack)
 geemod <- geeglm(resp ~ age + smoke, id = id, corstr = "ar1", scale.fix = TRUE, data = ohio, family =binomial(link = "logit"))
 summary(geemod)
 ```
+The autoregressive correlation structure indicates that a child who already wheezes is likely to continue to wheeze. 
 
 ### 13.1j
 (j) What is your overall conclusion regarding the effect of age and maternal smoking? Can we trust the GLM result or are the GLMM models preferable?
+
+The GLMM models are preferable. We can conclude that age has a significant effect on wheezing, and that maternal smoking does not. When the mother is not a smoker, it's found that the amount of children wheezing decreases by roughly 20% for every year increase in age on average. 

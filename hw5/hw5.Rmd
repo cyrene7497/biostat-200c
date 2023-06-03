@@ -86,6 +86,8 @@ can't get $\sigma_\alpha$ and $\sigma_\epsilon$ separately?
 
 4. For all three estimates, check that your results match those we obtained using R for the `pulp` example in class.
 
+The ones that have been found match the `pulp` examples.
+
 ## Q2. Estimation of random effects
 
 1. Assume the conditional distribution
@@ -103,6 +105,22 @@ where $f$ denotes corresponding density. Show that the posterior distribution is
 $$
 \mathbb{E} (\boldsymbol{\gamma} \mid \mathbf{y}) = \boldsymbol{\Sigma} \mathbf{Z}^T (\mathbf{Z} \boldsymbol{\Sigma} \mathbf{Z}^T + \sigma^2 \mathbf{I})^{-1} (\mathbf{y} - \mathbf{X} \boldsymbol{\beta}).
 $$
+\begin{eqnarray*}
+f(\gamma | y) = f(y)f(y|\gamma) \times f(\gamma) \\
+\gamma ~ N(\boldsymbol{0}_q, \boldsymbol{\Sigma}) \\
+f(y|\gamma) &=& N(\mathbf{X} \boldsymbol{\beta} + \mathbf{Z}\gamma, \sigma^2 \mathbf{I}_n) \\
+f(\gamma|y) &=& f(y)N(\mathbf{X} \boldsymbol{\beta} + \mathbf{Z}\gamma, \sigma^2 \mathbf{I}_n) \times N(\boldsymbol{0}_q, \boldsymbol{\Sigma}) \\
+\end{eqnarray*}
+
+Ignoring constant terms, we can simplify the numerator:
+
+\begin{eqnarray*}
+\propto \exp{-2\sigma(y - \mathbf{X} \boldsymbol{\beta} -\mathbf{Z}\gamma)^T(y - \mathbf{X} \boldsymbol{\beta} -\mathbf{Z}\gamma) - \gamma^T\boldsymbol{\Sigma} - \gamma} \\
+\propto \exp(-2\sigma(y - \mathbf{X}\boldsymbol{\beta})^T(y - \mathbf{X}\boldsymbol{\beta}) - \gamma^T(\mathbf{Z}^T\mathbf{Z}\sigma^2\mathbf{I} + \boldsymbol{\Sigma} - 1)\gamma + \sigma^2(y - \mathbf{X}\boldsymbol{\beta})^T\mathbf{Z}\gamma) \\
+f(\gamma|y) \propto \exp{-0.5(y-\mathbf{X}\boldsymbol{\beta} - \mathbf{Z}\gamma)^T(\sigma^2\mathbf{I})^{-1}(y - \mathbf{X}\boldsymbol{\beta} - \mathbf{Z}\gamma) - 0.5(\gamma - 0)^T \boldsymbol{\Sigma}^{-1}(\gamma - 0)}
+\end{eqnarray*}
+
+by expanding and rearranging terms and Woodbury Inversion for final answer.
 
 2. For the balanced one-way ANOVA random effects model, show that the posterior mean of random effects is always a constant (less than 1) multiplying the corresponding fixed effects estimate.
 

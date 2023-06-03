@@ -9,7 +9,7 @@ output:
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, cache = FALSE)
+knitr::opts_chunk$set(echo = TRUE, cache = FALSE, warning = FALSE, message = FALSE)
 ```
 ## Q1. Balanced one-way ANOVA random effects model
 
@@ -33,7 +33,9 @@ which can be solved to obtain ANOVA estimate
 \end{eqnarray*}
 
 **Solution:**
+
 + $\mathbb{E}(\bar y_{\cdot \cdot})$
+
 \begin{eqnarray*}
 \mathbb{E}(y_{ij}) &=& \mathbb{E}(\mu + \alpha_i + \epsilon_{ij}) \\
 &=& \mathbb{E}\mu + \mathbb{E}\alpha_i + \mathbb{E}\epsilon_{ij} \\
@@ -43,39 +45,42 @@ which can be solved to obtain ANOVA estimate
 &=& \frac{\sum_{ij}\mu}{na} = \mu
 \end{eqnarray*}
 
-+ $\widehat{\sigma}_{\epsilon}^2 &=& \frac{\text{SSE}}{a(n-1)}$
++ SSE
+
 \begin{eqnarray*}
 \mathbb{E} \left[ \sum_{i=1}^a \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] &=& \sum_{i=1}^a \mathbb{E}\left[ \sum_{j=1}^n (y_{ij} - \bar{y}_{i \cdot})^2 \right] \\
-y_{ij} = \mu + \alpha_i+\epsilon_{ij} \\
+y_{ij} &=& \mu + \alpha_i+\epsilon_{ij} \\
 \bar{y}_{i \cdot} &=& \frac{1}{n} \sum_{j=1}^n(\mu + \alpha_i + \epsilon_{ij}) = \mu + \alpha_i + \bar{\epsilon}_{i \cdot} \\
 y_{ij} - \bar{y}_{i \cdot} &=& \epsilon_{ij} - \bar{\epsilon}_{i \cdot} \\
-\mathbb{E}(\sum(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2) = (n-1)\sigma_\epsilon^2 \\
-\sum_{i=1}^a\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2 \right] = \sum^a (n-1)\sigma_\epsilon^2 \\
+\mathbb{E}(\sum(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2) &=& (n-1)\sigma_\epsilon^2 \\
+\sum_{i=1}^a\mathbb{E}\left[\sum_{j=1}^n(\epsilon_{ij} - \bar{\epsilon}_{i \cdot})^2 \right] &=& \sum^a (n-1)\sigma_\epsilon^2 \\
 &=& a(n-1)\sigma_\epsilon^2
 \end{eqnarray*}
 
-+ $\widehat{\sigma}_{\alpha}^2 &=& \frac{\text{SSA}/(a-1) - \widehat{\sigma}_{\epsilon}^2}{n}$
++ SSA
+
 \begin{eqnarray*}
-\mathbb{E}(SST) &=& \mathbb{E}\left[ \sum^a \sum^n (y_{ij} - \bar{y}_{\cdot \cdot})^2 \right] \\
+\mathbb{E}(\text(SST)) &=& \mathbb{E}\left[ \sum^a \sum^n (y_{ij} - \bar{y}_{\cdot \cdot})^2 \right] \\
 \mathbb{E}(SST) &=& \mathbb{E}\left[\sum^a \sum^n (\mu + \alpha_i + \epsilon_{ij} - (\mu + \bar{\alpha} + \bar{\epsilon_{\cdot \cdot}}))^2\right] \\
 &=& \mathbb{E}\left[\sum^a \sum^n ((\alpha_i - \bar{\alpha}) + (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}}))^2\right] \\
 &=& \mathbb{E}\left[\sum^a \sum^n (\alpha_i - \bar{\alpha})^2 \right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
 &=& n\mathbb{E}\left[\sum^a(\alpha_i - \bar{\alpha})^2\right] + \mathbb{E}\left[\sum^a \sum^n (\epsilon_{ij} - \bar{\epsilon_{\cdot \cdot}})^2 \right] \\
 &=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2 \\
-\Rightarrow \mathbb{E}(SSA) = \mathbb{E}(SST) - \mathbb{E}(SSE) \\
+\\
+\Rightarrow \mathbb{E}(SSA) &=& \mathbb{E}(SST) - \mathbb{E}(SSE) \\
 &=& n(a-1) \sigma_{\alpha}^2 + (na-1)\sigma_{\epsilon}^2 - a(n-1)\sigma_{\epsilon}^2 \\
-&=& n(a-1) \sigma\{\alpha}^2 + na\sigma_{\epsilon}^2 - \sigma_{\epsilon}^2 - na\sigma_{\epsilon}^2 + a\sigma_{\epsilon}^2 \\
-&=& n(a-1) \sigma\{\alpha}^2 + (a-1)\sigma_{\epsilon}^2 \\
-&=& (a-1)(n\sigma\{\alpha}^2 + \sigma_{\epsilon}^2)
+&=& n(a-1) \sigma_{\alpha}^2 + na \sigma_{\epsilon}^2 - \sigma_{\epsilon}^2 - na \sigma_{\epsilon}^2 + a \sigma_{\epsilon}^2 \\
+&=& n(a-1) \sigma_{\alpha}^2 + (a-1) \sigma_{\epsilon}^2 \\
+&=& (a-1)(n \sigma_{\alpha}^2 + \sigma_{\epsilon}^2) \\
 \end{eqnarray*}
 
 2. Derive the MLE estimate for $\mu$, $\sigma_\alpha^2$, and $\sigma_{\epsilon}^2$. Hint: write down the log-likelihood and find the maximizer.
 
 \begin{eqnarray*}
-L(\mu, \sigma_\alpha^2, \sigma_\epsilon^2) &=& \prod_{i=1}^a \prod_{j=1}^n \frac{1}{\sqrt{2\pi(\sigma_\alpha^2 + \sigma_epsilon^2)}}\exp{\frac{1}{2(\sigma_\slpha^2 + \sigma_epsilon^2)}(y_{ij} - \mu)^2} \\
-\ell(\mu, \sigma_\alpha^2, \sigma_\epsilon^2) &=& \sum^a \sum^n -\frac{1}{2}\log2\pi - \frac{1}{2}\log(\sigma_\alpha^2 + \sigma_epsilon^2) - \frac{1}{2(\sigma_\alpha^2 + \sigma_epsilon^2)}(y_{ij} - \mu)^2 \\
-\frac{d\ell}{d\mu} &=& - \sum^a \sum^n \frac{1}{\sigma_\alpha^2 + \sigma_epsilon^2} (y_{ij} - \mu) \\
-\Rightarrow 0 &=& -\frac{1}{\sigma_\alpha^2 + \sigma_epsilon^2} \sum^a \sum^n(y_{ij} - \widehat{\mu}) \\
+L(\mu, \sigma_{\alpha}^2, \sigma_{\epsilon}^2) &=& \prod_{i=1}^a \prod_{j=1}^n \frac{1}{\sqrt{2\pi(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}}\exp{\frac{1}{2(\sigma_{\alpha}^2 + \sigma_{\epsilon}^2)}(y_{ij} - \mu)^2} \\
+\ell(\mu, \sigma_\alpha^2, \sigma_\epsilon^2) &=& \sum^a \sum^n -\frac{1}{2}\log2\pi - \frac{1}{2}\log(\sigma_\alpha^2 + \sigma_\epsilon^2) - \frac{1}{2(\sigma_\alpha^2 + \sigma_\epsilon^2)}(y_{ij} - \mu)^2 \\
+\frac{d\ell}{d\mu} &=& - \sum^a \sum^n \frac{1}{\sigma_\alpha^2 + \sigma_\epsilon^2} (y_{ij} - \mu) \\
+\Rightarrow 0 &=& -\frac{1}{\sigma_\alpha^2 + \sigma_\epsilon^2} \sum^a \sum^n(y_{ij} - \widehat{\mu}) \\
 0 &=& \sum^a \sum^n y_{ij} - a n \widehat{\mu} \\
 \Rightarrow \widehat{\mu} &=& \frac{\sum^a\sum^n y_{ij}}{an}
 \end{eqnarray*}
@@ -133,17 +138,18 @@ library(dplyr)
 
 The `ratdrink` data consist of five weekly measurements of body weight for 27 rats. The first 10 rats are on a control treatment while 7 rats have thyroxine added to their drinking water. Ten rats have thiouracil added to their water.
 ```{r}
-ratdrink %>% print(width = Inf)
+ratdrink %>% head(5)
 ```
 
 
 ### 11.1a
 Plot the data showing how weight increases with age on a single panel, taking care to distinguish the three treatment groups. Now create a three-panel plot, one for each group. Discuss what can be seen.
 ```{r}
+library(ggplot2)
+library(gridExtra)
 ggplot(data = ratdrink, 
        aes(x = weeks, y = wt, group = treat, col = as.factor(treat))) + 
   stat_summary(geom = "line", fun.y = mean) + 
-  theme_pubr() + 
   labs(x = "Week", y = "Weight",
                       title = "Rat Weight Over Time",
                       col = "Treatment") +
@@ -179,6 +185,7 @@ Fit a linear longitudinal model that allows for a random slope and intercept for
 library(tidyverse)
 ```
 ```{r}
+library(lme4)
 m1 <- lmer(wt ~ weeks * treat + (weeks | subject), data = ratdrink)
 summary(m1)
 ```
@@ -203,11 +210,13 @@ Construct diagnostic plots showing the residuals against the fitted values and a
 plot(resid(m1) ~ fitted(m1), xlab = "Fitted", ylab = "Residuals")
 abline(h = 0 )
 ```
+
 The residuals are mostly scattered about the x-axis with no evidence of homoscedasticity, therefore the assumptions of linearity and equal variance appear reasonably satisfied.
 
 ```{r}
 qqnorm(resid(m1), main = "")
 ```
+
 The QQ plot shows that there don't seem to be deviations from the normality assumption.
 
 ### 11.1e
@@ -253,15 +262,14 @@ ohio %>%
 ### 13.1c
 Make plot which shows how the proportion of children wheezing changes by age with a separate line for smoking and nonsmoking mothers.
 ```{r}
-(props <- xtabs(~ age + resp + smoke, ohio) %>%
-  as_tibble())
+props <- xtabs(~ age + resp + smoke, ohio) %>%
+  as_tibble()
 props$np <- props$n/537
-props
 props %>%
   filter(resp == 1) %>%
   ggplot() +
   geom_line(aes(x = age, y = np, group = smoke, col = as.factor(smoke))) +
-  theme_pubr() + labs(x = "Age", y = "Proportion",
+  labs(x = "Age", y = "Proportion",
                       title = "Proportion of Child Wheezing by Age",
                       col = "Mother Smoker")
   scale_color_manual(values = c("0" = "red", "1" = "green"),
@@ -271,16 +279,16 @@ props %>%
 ### 13.1d
 (d) Group the data by child to count the total (out of four) years of wheezing. Fit a binomial GLM to this response to check for a maternal smoking effect. Does this prove there is a smoking effect or could there be another plausible explanation?
 ```{r}
-(df1 <- aggregate(ohio$smoke, list(ohio$id), FUN=sum) %>%
+df1 <- aggregate(ohio$smoke, list(ohio$id), FUN=sum) %>%
   as_data_frame() %>%
-  dplyr::rename("mom_smoke" = "x", "id" = "Group.1"))
+  dplyr::rename("mom_smoke" = "x", "id" = "Group.1")
 
-(ohiobin <- aggregate(ohio$resp, list(ohio$id), FUN=sum) %>%
+ohiobin <- aggregate(ohio$resp, list(ohio$id), FUN=sum) %>%
   mutate(not_wheeze = 4 - x) %>%
   dplyr::rename("years_wheezed" = "x", "id" = "Group.1") %>%
-  full_join(df1, by = "id"))
+  full_join(df1, by = "id")
 ohiobin$smoke <- ifelse(ohiobin$mom_smoke != 0, 1, 0)
-ohiobin
+ohiobin %>% head(5)
 
 glm(cbind(years_wheezed, not_wheeze) ~ smoke, family = binomial, data = ohiobin) %>%
   summary()
@@ -300,7 +308,6 @@ The odds of wheezing decreases by 17% with every year increase in age. (exp(-.18
 ### 13.1f
 (f) Now fit the same model but using adaptive Gaussian-Hermit quadrature. Compare to the previous model fit.
 ```{r}
-library(lme4)
 ghmod <- glmer(resp ~ age + smoke + (1 | id), nAGQ = 25, family = binomial, data = ohio)
 summary(ghmod)
 ```

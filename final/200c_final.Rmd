@@ -37,7 +37,7 @@ Group 1 (`chr = 0`):
 | 2.5  | 23     | 1       | 0.88     |
 | 2.6  | 22     | 1       | 0.84     |
 | 3.0  | 21     | 1       | 0.80     |
-| 3.5  | 20     | **???** | **???**  |
+| 3.5  | 20     | 20-19 = **1** | (20-1)/25 = **0.76**  |
 | 3.8  | 19     | 1       | 0.72     |
 | 5.3  | 18     | 1       | 0.68     |
 | 5.4  | 17     | 1       | 0.64     |
@@ -45,14 +45,14 @@ Group 1 (`chr = 0`):
 | 6.6  | 15     | 1       | 0.56     |
 | 8.2  | 14     | 1       | 0.52     |
 | 8.7  | 13     | 1       | 0.48     |
-| 9.2  | **???** | **???** | **???** |
+| 9.2  | 13-1 = **12** | 12-10 = **2** | (12-2)/25 = **0.4** |
 | 9.8  | 10     | 1       | 0.36     |
 | 10.0 | 9      | 1       | 0.32     |
 | 10.2 | 8      | 1       | 0.28     |
 | 10.7 | 7      | 1       | 0.24     |
 | 11.0 | 6      | 1       | 0.20     |
 | 11.1 | 5      | 1       | 0.16     |
-| 11.7 | 4      | **???** | **???**  |
+| 11.7 | 4      | **1** | 3/25= **0.12**  |
 
 Group 2 (`chr = 1`):
 
@@ -67,9 +67,9 @@ Group 2 (`chr = 1`):
 | 3.1  | 19     | 1       | 0.72     |
 | 3.5  | 18     | 1       | 0.68     |
 | 3.6  | 17     | 1       | 0.64     |
-| 3.9  | **???** | **???** | **???** |
-| 4.1  | **???** | **???** | **???** |
-| 4.2  | **???** | **???** | **???** |
+| 3.9  | 17-1 = **16** | **1** | 15/25= **0.6** |
+| 4.1  | **15** | **1** | 14/25= **0.56** |
+| 4.2  | **14** | **1** | 13/25 = **0.52** |
 | 4.7  | 13     | 1       | 0.48     |
 | 4.9  | 12     | 1       | 0.44     |
 | 5.2  | 11     | 1       | 0.40     |
@@ -80,18 +80,50 @@ Group 2 (`chr = 1`):
 | 8.3  | 6      | 1       | 0.20     |
 | 8.4  | 5      | 1       | 0.16     |
 | 8.8  | 4      | 1       | 0.12     |
-| 9.1  | **???** | **???** | 0.08    |
-| 9.9  | **???** | **???** | 0.04    |
+| 9.1  | 4-1 = **3** | 3-(.08x25) = **1** | 0.08    |
+| 9.9  | .08x25= **2** | 2-1= **1** | 0.04    |
 | 11.4 | 1      | 1       | 0.00     |
 
+Survival probabilities are calculated by (`n.risk` - `n.event`)/(n.risk at first time point) where `n.risk` is the number at risk and `n.event` is the number of events at that time point. In this case, the number at risk at the first time point is 25. 
 
 2. Use R to display the Kaplan-Meier survival curves for groups 1 (`chr = 0`) and 2 (`chr = 1`). 
+```{r}
+chronic <- list("time" = c(1.8, 2.2, 2.5, 2.6, 3.0, 3.5, 3.8, 5.3, 5.4, 5.7, 6.6,
+                           8.2, 8.7, 9.2, 9.2, 9.8, 10.0, 10.2, 10.7, 11.0, 11.1,
+                           11.7, 1.4, 1.6, 1.8, 2.4, 2.8, 2.9, 3.1, 3.5, 3.6, 3.9,
+                           4.1, 4.2, 4.7, 4.9, 5.2, 5.8, 5.9, 6.5, 7.8, 8.3, 8.4,
+                           8.8, 9.1, 9.9, 11.4), 
+                "chr" = c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
+                          1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1))
+
+kmfit <- chronic %>% as.data.frame() %>% survfit(Surv(time) ~ chr, data = .)
+kmfit %>% autoplot()
+```
 
 3. Write down the log-likelihood of the parametric exponential (proportional hazard) model for survival times. Explain why this model can be fit as a generalized linear model with offset.
 
-4. Fit the exponential (proportional hazard) model on the `chr` data using R. Interpret the coefficients.
+The log-likelihood of the proportional hazard model for survival times is
+$$
+\ell(\boldsymbol{\beta}) = \sum_j (\delta_j \cdot \mathbf{x}_j^T \boldsymbol{\beta} - y_j e^{\mathbf{x}_j^T \boldsymbol{\beta}}) = \sum_j \left\{ \delta_j \cdot [\mathbf{x}_j^T \boldsymbol{\beta} + \log(y_j)] - y_j e^{\mathbf{x}_j^T \boldsymbol{\beta}} - \delta_j \log(y_j) \right\}.
+$$
+This model's log-likelihood resembles the log-likelihood of a Poisson distribution (which is a generalized linear model) if we treat $\delta_j$ as Poisson$(\mu_j)$ where $\mu_j = \theta_j y_j$. If we use the log-link then 
+$$
+\log(\mu_j) = log(\theta_j) + \log(y_j)
+$$
+then survival times $y_j$ are included in the model as an offset term $\log(y_j)$. 
 
-5. Comment on the limitation of exponential model compared to other more flexible models such as Weibull. 
+4. Fit the exponential (proportional hazard) model on the `chr` data using R. Interpret the coefficients.
+```{r}
+glm(chr ~ offset(log(time)), family = poisson, data = chronic) %>%
+  summary()
+survreg(Surv(time) ~ chr, dist = "exponential", data = chronic) %>%
+  summary()
+```
+To interpret the coefficients, in a proportional hazards model, $e^{-\beta_j}$ gives the hazard ratio of comparing two levels. Therefore the hazard of history of chronic disease is $e^{0.270} = 1.31$ times the hazard of not having a history of chronic disease, or 30% higher.  
+
+5. Comment on the limitation of exponential model compared to other more flexible models such as Weibull.
+
+The densities of the Weibull distribution and exponential distribution are very similar. When $\lambda = 1$ in the Weibull model, this corresponds to the exponential distribution. The hazard function in the exponential model doesn't depend on $y$ while the hazard function in the Weibull distribution does depend on $y$. This is a limitation of the exponential model since the probability of failure often is related to time and even likely increases with time. The Weibull model is more flexible since we can model both increasing and decreasing Weibull models. In an increasing Weibull model, as survival time increases, the probability of death increases as well (for example, survival of a cancer patient not responding to treatment). In a decreasing Weibull model, as suvival time increases, the probability of death decreases (for example, survival of a patient after a successful surgery).  
 
 ## Q2 (25 pts). (Longitudinal data analysis) 
 

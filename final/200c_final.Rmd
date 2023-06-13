@@ -203,18 +203,91 @@ that addresses this question. Specifically, the investigator at Center=1 is inte
 ## Q4. (25 pts) LMM and GAMM
 
 This question is adapted from Exercise 11.2 of ELMR (p251). Read the documentation of the dataset `hprice` in Faraway package before working on this problem.
+```{r}
+hprice %>% head(5)
+```
 
 1. Make a plot of the data on a single panel to show how housing prices increase by year. Describe what can be seen in the plot.
 
+The average sale price (`narsp`) is collected as natural log of the average sale price in thousands of dollars so we exponentiate values to show how raw average housing prices change by year. There is one line per MSA (Metropolitan statistical area) over 9 years from 1986-1944. 
+
+```{r}
+hprice %>%
+  ggplot() + 
+  geom_line(mapping = aes(x = time, y = exp(narsp), color = msa),
+            show.legend = FALSE) +
+  scale_x_continuous("Year", 
+                     labels = c("1986", "1988", "1990", "1992", "1994")) +
+  ylab("Average Sale Price in Thousands of Dollars") 
+```
+
+It's apparent that different MSAs have different average starting prices for houses. It also seems like every MSA has a generally increasing trend although they have different trajectories. Due to the different starting prices, we can include a random intercept in the model. 
+
 2. Fit a linear model with the (log) house price as the response and all other variables (except msa) as fixed effect predictors. Which terms are statistically significant? Discuss the coefficient for time.
+```{r}
+lm1 <- lm(narsp ~ . - msa, data = hprice)
+summary(lm1)
+```
+All of the variables are statistically significant except for `ajwtr1` which is an indicator for whether the MSA is adjacent to the coastline. According to this linear model, the effect of time is negative since the coefficient for `time` is negative. This is contrary to what we observed in the graph above suggesting that a linear model isn't appropriate. The fixed effect of time suggests that average housing price drops over the years and that when you control for everything else, there is a negative trend with time. This doesn't appear to be the case in the marginal plot we made. 
 
 3. Make a plot that shows how per-capita income changes over time. What is the nature of the increase? Make a similar plot to show how income growth changes over time. Comment on the plot.
+```{r}
+hprice %>%
+  ggplot() + 
+  geom_line(mapping = aes(x = time, y = ypc, color = msa),
+            show.legend = FALSE) +
+  scale_x_continuous("Year", 
+                     labels = c("1986", "1988", "1990", "1992", "1994")) +
+  ylab("Average Per Capita Income") 
+```
+
+The average per-capita income increases linearly over time. 
+
+```{r}
+hprice %>%
+  ggplot() + 
+  geom_line(mapping = aes(x = time, y = perypc, color = msa),
+            show.legend = FALSE) +
+  scale_x_continuous("Year", 
+                     labels = c("1986", "1988", "1990", "1992", "1994")) +
+  ylab("Percentage Growth in Per-Capita Income") 
+```
+
+The growth changes are generally stable and consistent except for 1991-1992. This suggests that the change in housing price is mainly modeled by the change in per-capita income and that the effect of time is actually negative when adjusting for per-capita income over time.
 
 4. Create a new variable that is the per-capita income for the first time period for each MSA. Refit the same linear model but now using the initial income and not the income as it changes over time. Compare the two models.
 
+```{r}
+ypc_i <- data.frame(msa = unique(hprice$msa),
+                  ypc_i = hprice$ypc[hprice$time == 1])
+hprice <- merge(hprice, ypc_i, all.x = TRUE)
+hprice %>% head(3)
+hprice %>% tail(3)
+```
+```{r}
+lm2 <- lm(narsp ~ .- msa - ypc, data = hprice)
+summary(lm2)
+```
+The effect of initial average per capita income `ypc_i` is slightly more in this model than the previous model. In both models `ypc_i` and `ypc` were both significant. The main difference is that the effect of `time` is now positive. 
+
 5. Fit a mixed effects model that has a random intercept for each MSA. Why might this be reasonable? The rest of the model should have the same structure as in the previous question. Make a numerical interpretation of the coefficient of time in your model. Explain the difference between REML and MLE methods.
+```{r}
+mem <- lmer(narsp ~ . - msa - ypc + (1 | msa), data = hprice)
+summary(mem)
+```
+A random intercept is appropriate for this model since each MSA has different initial housing prices as we saw in the first plot. The random intercept helps to account for variability that we see in the initial housing prices. It seems it did a good job at capturing this variability since the random intercept effect has a higher standard deviation than the residual random effects. 
+
+The coefficient of `time` is similar in this model to the previous. For every additional 2 years in time, the average sale prices in thousands of dollars in an MSA is estimated to increase by 3.68% (the dependent variable is log-transformed so there is a multiplicative effect and $\beta = 0.0368 = 3.68%$) on average, all else constant.
+
+The maximum likelihood estimation method (MLE) is biased for the estimation of variance components. The restricted maximum likelihood estimation method (REML) tries to reduce bias in the variance components. The variance component parameters are estimated by MLE using transformed data and then fixed effects are estimated using general least squares. The REML estimate does not depend on the choice of transformation/bias in the model. 
 
 6. Fit a model that omits the adjacent to water and rent control predictors. Test whether this reduction in the model can be supported.
+```{r}
+mem2 <- lmer(narsp ~ . - msa - ypc - ajwtr - rcdum + (1 | msa), data = hprice)
+library(RLRsim)
+exactLRT(m=mem2, m0=mem)
+```
+
 
 7. It is possible that the increase in prices may not be linear in year. Fit an additive mixed model where smooth is added to year. Make a plot to show how prices have increased over time.
 

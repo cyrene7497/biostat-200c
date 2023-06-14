@@ -272,7 +272,7 @@ The effect of initial average per capita income `ypc_i` is slightly more in this
 
 5. Fit a mixed effects model that has a random intercept for each MSA. Why might this be reasonable? The rest of the model should have the same structure as in the previous question. Make a numerical interpretation of the coefficient of time in your model. Explain the difference between REML and MLE methods.
 ```{r}
-mem <- lmer(narsp ~ . - msa - ypc + (1 | msa), data = hprice)
+mem <- lmer(narsp ~ . - msa - ypc + (1 | msa), data = hprice, REML = FALSE)
 summary(mem)
 ```
 A random intercept is appropriate for this model since each MSA has different initial housing prices as we saw in the first plot. The random intercept helps to account for variability that we see in the initial housing prices. It seems it did a good job at capturing this variability since the random intercept effect has a higher standard deviation than the residual random effects. 
@@ -283,15 +283,43 @@ The maximum likelihood estimation method (MLE) is biased for the estimation of v
 
 6. Fit a model that omits the adjacent to water and rent control predictors. Test whether this reduction in the model can be supported.
 ```{r}
-mem2 <- lmer(narsp ~ . - msa - ypc - ajwtr - rcdum + (1 | msa), data = hprice)
+mem2 <- lmer(narsp ~ . - msa - ypc - ajwtr - rcdum + (1 | msa), data = hprice, REML = FALSE)
 library(RLRsim)
-exactLRT(m=mem2, m0=mem)
+#exactLRT(m=mem2, m0=mem)
+lrt <- as.numeric(2*(logLik(mem, REML =F) - logLik(mem2, REML = F)))
+pchisq(lrt, 2, lower.tail = F)
+```
+The p-value of the LRT is 0.12 which is greater than 0.05 which indicates that the smaller model (which doesn't include the variables of adjacent to water and rent control predictors) gives a better fit than the null model which includes those predictors.
+
+7. It is possible that the increase in prices may not be linear in year. Fit an additive mixed model where smooth is added to year. Make a plot to show how prices have increased over time.
+```{r}
+library(mgcv)
+gamm <- gamm(narsp ~ ypc_i + perypc + regtest + s(time, k = 9), random = list(msa = ~1),  data = hprice)
+summary(gamm$gam)
+hprice %>%
+  ggplot() + 
+  geom_line(mapping = aes(x = time, y = exp(narsp), color = msa),
+            show.legend = FALSE) +
+  scale_x_continuous("Year", 
+                     labels = c("1986", "1988", "1990", "1992", "1994")) +
+  ylab("Average Sale Price in Thousands of Dollars") 
 ```
 
 
-7. It is possible that the increase in prices may not be linear in year. Fit an additive mixed model where smooth is added to year. Make a plot to show how prices have increased over time.
-
 8. Interpret the coefficients in the previous model for the initial annual income, growth and regulation predictors.
+
+The following three coefficients are parametric in the model so they follow the general linear model interpretation.
+
+- `ypc_i`: For every thousand dollar increase in initial average per capita income, average sale price (in thousands of dollars) increases by $e^{0.0001007} = 1.000101$, or .01% on average, all else constant. 
+
+- `perypc`: For every 1% increase in growth in per-capita income, average sale price (in thousands of dollars) decreases by $e^{-0.0112156} = 0.9888471$ or decreases by 1.2% on average, all else constant. 
+
+- `regtest`: For every increase in the regulatory environment index (more regulations), the average sale price (in thousands of dollars) increases by $e^{0.0355538} = 1.036193$ or roughly 3.6% on average, all else constant. 
+
+```{r}
+# hist(hprice$regtest)
+# ggplot(hprice) + geom_point(aes(x = regtest, y = narsp))
+```
 
 ## Optional Extra Credit Problem* 
 

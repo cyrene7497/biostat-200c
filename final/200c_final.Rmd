@@ -96,13 +96,15 @@ Survival probabilities are calculated by (`n.risk` - `n.event`)/(n.risk at first
 ```{r}
 chronic <- list("time" = c(1.8, 2.2, 2.5, 2.6, 3.0, 3.5, 3.8, 5.3, 5.4, 5.7, 6.6,
                            8.2, 8.7, 9.2, 9.2, 9.8, 10.0, 10.2, 10.7, 11.0, 11.1,
-                           11.7, 1.4, 1.6, 1.8, 2.4, 2.8, 2.9, 3.1, 3.5, 3.6, 3.9,
-                           4.1, 4.2, 4.7, 4.9, 5.2, 5.8, 5.9, 6.5, 7.8, 8.3, 8.4,
-                           8.8, 9.1, 9.9, 11.4), 
-                "chr" = c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
+                           11.7, 12.1, 12.2, 12.3, 1.4, 1.6, 1.8, 2.4, 2.8, 2.9,
+                           3.1, 3.5, 3.6, 3.9, 4.1, 4.2, 4.7, 4.9, 5.2, 5.8, 5.9,
+                           6.5, 7.8, 8.3, 8.4, 8.8, 9.1, 9.9, 11.4),
+                "cens" = c(2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,1,1,1,2,2,
+                           2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2,2),
+                "chr" = c(0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,1,1,1,1,1,
                           1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1,1))
 
-kmfit <- chronic %>% as.data.frame() %>% survfit(Surv(time) ~ chr, data = .)
+kmfit <- chronic %>% as.data.frame() %>% survfit(Surv(time,cens) ~ chr, data = .)
 kmfit %>% autoplot()
 ```
 
@@ -120,12 +122,10 @@ then survival times $y_j$ are included in the model as an offset term $\log(y_j)
 
 4. Fit the exponential (proportional hazard) model on the `chr` data using R. Interpret the coefficients.
 ```{r}
-glm(chr ~ offset(log(time)), family = poisson, data = chronic) %>%
-  summary()
-survreg(Surv(time) ~ chr, dist = "exponential", data = chronic) %>%
+glm(cens ~ as.factor(chr) + offset(log(time)), family = poisson, data = chronic) %>%
   summary()
 ```
-To interpret the coefficients, in a proportional hazards model, $e^{-\beta_j}$ gives the hazard ratio of comparing two levels. Therefore the hazard of history of chronic disease is $e^{0.270} = 1.31$ times the hazard of not having a history of chronic disease, or 30% higher.  
+To interpret the coefficients, in a proportional hazards model, $e^{-\beta_j}$ gives the hazard ratio of comparing two levels. Therefore the hazard of history of chronic disease is $e^{0.4198} = 1.52$ times the hazard of not having a history of chronic disease, or 52% higher.  
 
 5. Comment on the limitation of exponential model compared to other more flexible models such as Weibull.
 

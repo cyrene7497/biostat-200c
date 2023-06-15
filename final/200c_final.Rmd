@@ -362,7 +362,7 @@ skin cancers over time. As the statistician on the project, provide an analysis 
 that addresses this question. Specifically, the investigator at Center=1 is interested in characterizing the distribution of risk among subjects at her center. In the following, only include the subset of subjects with Center=1 in the analysis.
 ```{r}
 skin <- read.table("skin.txt", header = FALSE, sep = "")
-skin <- skin %>% rename(id = V1, center = V2, age = V3, skintype = V4, gender = V5,
+skin <- skin %>% dplyr::rename(id = V1, center = V2, age = V3, skintype = V4, gender = V5,
                         exposure = V6, num_new = V7, treatment = V8, year = V9)
 skin %>% head(3)
 skin1 <- skin %>%
@@ -380,23 +380,23 @@ skinmod1 <- glm(num_new ~ year, family = poisson, data = skin1)
 summary(skinmod1)
 library(gtsummary)
 skinmod1 %>%
-  tbl_regression(exponentiate = TRUE)
+  tbl_regression(exponentiate = TRUE, intercept = TRUE)
 ```
 
      
 2. Provide an algebraic definition for a generalized linear mixed model (GLMM) in which the only fixed effects are for the intercept and Year (as a continuous variable), and the only random effect is the intercept. What is being assumed about how the distribution of risk among subjects changes with time?
 
 $$
-\text{number of new skin cancers} = e^{X\beta + Z\gamma} = e^{\beta_0 + year\beta_1 + id\gamma_0 + \epsilon}
+\text{number of new skin cancers} = e^{X\beta + Z\gamma} = e^{\beta_0 + year\beta_1 + id\gamma_0 + \epsilon}, \epsilon_i \sim N(0, \sigma^2)
 $$
-The only random effect is an intercept for every subject ID. This model assumes that risk is distributed multivariate normal among subjects.
+The only random effect is an intercept for every subject ID. This model assumes that risk is distributed multivariate normal among subjects. It also assumed that the slopes of each individual are roughly the same. 
      
-3. Fit your chosen GLMM and provide a table from your output which includes the estimates for the parameters in your GLMM, and provide careful interpretation of the Year term.
+3. Fit your chosen GLMM and provide a table from your output which includes the estimates for the parameters in your GLMM, and provide careful interpretation of the `Year` term.
 ```{r}
 skinmod2 <- glmer(num_new ~ year + (1 | id), family = poisson, data = skin1)
 summary(skinmod2)
 ```
-For every additional year of follow-up after the beginning of the experiment, the average number of new skin cancer decreases by roughly 11% ($e^{-0.1083} = 0.89$) all else held constant. 
+For every additional year of follow-up after the beginning of the experiment at center 1, the average number of new skin cancer decreases by roughly 11% ($e^{-0.1083} = 0.89$) all else held constant. 
 
 4. Are the estimates for the fixed intercept terms the same or different in the GLMM compared with the marginal model fitted in question (1)? Why are they the same or different?
 
@@ -404,6 +404,7 @@ The estimated for the fixed intercept terms are different in the GLMM compared t
      
 5. Use the parameter estimates from your GLMM and your model definition to characterize the distribution of expected counts of new skin cancers among subjects at center 1 during their first year of follow-up.
 
+For the poisson distribution, there is only one parameter $\lambda$ which is estimated by $\eta = log \mu = x^T\beta$ so by exponentiating the $\beta$ coefficient we get $\lambda = e^{-0.1083} = 0.89$ so the distribution is Poisson($\lambda = 0.89$).
 
 ## Q4. (25 pts) LMM and GAMM
 

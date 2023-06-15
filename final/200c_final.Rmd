@@ -90,6 +90,10 @@ Group 2 (`chr = 1`):
 | 9.9  | .08x25= **2** | 2-1= **1** | 0.04    |
 | 11.4 | 1      | 1       | 0.00     |
 
+The estimate of the survival is computed as:
+$$
+\widehat{S}(y_{(j)}) = \prod_{i = 1}^j \bigg(\frac{n_i - d_i}{n_i} \bigg)
+$$
 Survival probabilities are calculated by (`n.risk` - `n.event`)/(n.risk at first time point) where `n.risk` is the number at risk and `n.event` is the number of events at that time point. In this case, the number at risk at the first time point is 25. 
 
 2. Use R to display the Kaplan-Meier survival curves for groups 1 (`chr = 0`) and 2 (`chr = 1`). 
@@ -141,7 +145,7 @@ The data are available in the file `toenail.txt` from [here](https://ucla.box.co
 ```{r}
 library(dplyr)
 toe <- read.table("toenail.txt", header = FALSE, sep = "", dec = ".")
-toe <- toe %>% rename(id = V1, healthcl_fr = V2, gender = V3, month = V4, unail_len = V5, treatment = V6)
+toe <- toe %>% dplyr::rename(id = V1, healthcl_fr = V2, gender = V3, month = V4, unail_len = V5, treatment = V6)
 toe %>% head(5)
 ```
 
@@ -160,7 +164,7 @@ toe %>% head(5)
 The researchers had several questions, which they stated to you as follows:
 
 
-1. Use the linear mixed effect model (LMM) to answer: Is there a difference in the pattern of change of lengths of the unafflicted part of the nail between subjects receiving terbinafine and itraconazole over a 12 month period? Does one treatment show results more quickly?  
+1. Use the linear mixed effect model (LMM) to answer: Is there a difference in the pattern of change of lengths of the unafflicted part of the nail between subjects receiving `terbinafine` and `itraconazole` over a 12 month period? Does one treatment show results more quickly?  
     
     - Plot the change of lengths of the unafflicted part of the nail over time and separated by treatment groups. Comment on overall patterns over time.
 ```{r}
@@ -183,18 +187,36 @@ ggplot(data = toe,
 
     - Based on the pattern observed, pick appropriate time trend in the LMM and provide an algebraic definition for your chosen LMM, e.g., is the linear trend model adequate? or quadratic trend is needed? or any other pattern is more approriate? justify your answer. 
   
-  Based on the observed pattern, the linear trend model seems adequate since each individual follows a linear trend.
+  Based on the observed pattern, the time variable might not be completely linear and might need to be treated as piece-wise (as a factor) since the slope is variable within an individual's trend.
+```{r}
+tnmod1 <- lmer(unail_len ~ treatment + month + (1 | id), data = toe)
+ttmod1 <- lmer(unail_len ~ treatment + as.factor(month) + (1 | id), data = toe)
+library(pbkrtest)
+KRmodcomp(tnmod1, ttmod1)
+```
+The highly insignificant p-value suggests that treating the `month` variable as a factor variable (as a piece-wise function) is not preferable.
+
+```{r}
+tcmod1 <- lmer(unail_len ~ treatment + month + I(month^2) + (1 | id), data = toe)
+KRmodcomp(tcmod1, tnmod1)
+```
+The insignificant p-value suggests that including the `month` variable as a quadratic variable is not preferable. Therefore we continue with `month` as a linear term and include the random intercept for each subject ID.
+
+In the suggested random intercept model:
+
+$$
+\text{nail length} = treatment\beta_1 + month\beta_2 + id\gamma + \epsilon, \epsilon_i \sim N(0, \sigma^2)
+$$
     
     - Model the covariance: fit both random intercept and random slope model and determine which one fits the data better. 
 ```{r}
-toelmm1 <- lmer(unail_len ~ as.factor(treatment) + month + (1 | id), data = toe)
-summary(toelmm1)
-toelmm2 <- lmer(unail_len ~ as.factor(treatment) + (month | id), data = toe)
+summary(tnmod1)
+toelmm2 <- lmer(unail_len ~ treatment + (month | id), data = toe)
 summary(toelmm2)
 ```
     The model with the random slope fits the data better since that model captures more variability than the residuals. The variances of the random effects are higher than the residual variance. In the model with only a random intercept, the residual variance is higher so the model didn't capture the variability as well. 
 
-2. Use the linear mixed effect model (LMM) to answer: Is there an association between the pattern of change of nail lengths and gender and/or health club frequency in subjects taking terbinafine? This might indicate that this drug brings about relief more swiftly in some kinds of subject versus others.
+2. Use the linear mixed effect model (LMM) to answer: Is there an association between the pattern of change of nail lengths and gender and/or health club frequency in subjects taking `terbinafine`? This might indicate that this drug brings about relief more swiftly in some kinds of subject versus others.
 ```{r}
 toe_t <- toe %>%
   filter(treatment == 1)
@@ -239,35 +261,82 @@ ggplot(data = toe_t,
 Generally those who go to a health club once a week or less see longer length of untreated nails, but the slopes are similar suggesting that the rate of recovery is the same but just the initial length is different.
     
     - Based on the pattern observed from question 1, pick appropriate time trend in the LMM and provide an algebraic definition for your chosen LMM, e.g., is the linear trend model adequate? or quadratic trend is needed? or any other pattern is more approriate? justify your answer. 
-    
-    linear trend model
+
+**Concerning `gender`:**
+
+Because the lines go up and down over time, a piece-wise linear model might be a more appropriate time trend. 
+```{r}
+tnmod2 <- lmer(unail_len ~ gender + month + (1 | id), data = toe)
+ttmod2 <- lmer(unail_len ~ gender + as.factor(month) + (1 | id), data = toe)
+KRmodcomp(tnmod2, ttmod2)
+```
+The highly insignificant p-value suggests that treating the `month` variable as a factor variable (as a piece-wise function) is not preferable in the model including `gender`.
+
+```{r}
+tcmod2 <- lmer(unail_len ~ gender + month + I(month^2) + (1 | id), data = toe)
+KRmodcomp(tnmod2, tcmod2)
+```
+The high p-value suggests that treating the `month` variable as linear only is preferable in the model that includes `gender`.
+
+**Concerning `healthcl_fr` (health club frequency):**
+
+```{r}
+tnmod3 <- lmer(unail_len ~ healthcl_fr + month + (1 | id), data = toe)
+ttmod3 <- lmer(unail_len ~ healthcl_fr + as.factor(month) + (1 | id), data = toe)
+KRmodcomp(tnmod3, ttmod3)
+```
+The high p-value suggests that it is not preferable to treat `month` as a piece-wise function. 
+```{r}
+tcmod3 <- lmer(unail_len ~ healthcl_fr + month + I(month^2) + (1 | id), data = toe)
+KRmodcomp(tnmod3, tcmod3)
+```
+The high p-value suggests that it is preferable in this model to include `month` only as a linear term.
+
+Therefore the suggested models with a random intercept are: 
+$$
+\text{nail length} = gender\beta_1 + month\beta_2 + id\gamma_1 + \epsilon, \epsilon_i \sim N(0, \sigma^2)\\
+\\
+\text{nail length} = healthclub\beta_1 + month\beta_2 + id\gamma_1 + \epsilon, \epsilon_i \sim N(0, \sigma^2)
+$$
     
     - Model the covariance: fit both random intercept and random slope model and determine which one fits the data better. 
 ```{r}
-toetlmm1 <- lmer(unail_len ~ as.factor(gender) + month + (1 | id), data = toe_t)
-summary(toetlmm1)
-toetlmm2 <- lmer(unail_len ~ as.factor(gender) + (month | id), data = toe_t)
+summary(tnmod2)
+toetlmm2 <- lmer(unail_len ~ gender + (month | id), data = toe_t)
 summary(toetlmm2)
 ```
 The model with both a random slope and random intercept fits the data better suggesting that each individual does have a variable recovery time by gender. The residual random variance goes down a lot when the random slope is included. 
 
 ```{r}
-toetlmm3 <- lmer(unail_len ~ as.factor(healthcl_fr) + month + (1 | id), data = toe_t)
-summary(toetlmm3)
-toetlmm4 <- lmer(unail_len ~ as.factor(healthcl_fr) + (month | id), data = toe_t)
+summary(tnmod3)
+toetlmm4 <- lmer(unail_len ~ healthcl_fr + (month | id), data = toe_t)
 summary(toetlmm4)
 ```
 The model with both a random slope and random intercept fits the data better suggesting that each individual does have a variable recovery time by health club frequency. The residual random variance goes down very much when the random slope is included. 
 
 3. In answering these scientific questions of interest, clearly write out the analytic models you consider for answering these questions (as detailed in the sub-questions). Clearly outline your decision making process for how you selected your final models. Fit your chosen final models and report to the project investigators on the stated scientific questions of interest.
 
-In answering these questions, I considered the trends of each individual since individuals might respond to the types of treatment differently. We saw that there was a difference in the pattern of change of lengths of the unafflicted part of the nail between subjects receiving terbinafine and itraconazole over a 12 month period? Itraconazole showed results more quickly based on the interpretation of the fixed effect of treatment 2 in the model with random slope and random intercept. In the first treatment group, men have a slightly higher nail growth than women based on the positive slope coefficient. The coefficient for health club frequency is negative, with the reference being those who go to the health club once a week or less, so there is less untreated nail growth in those who go to the health club more frequently. The final chosen model can include all of these variables with a random slope and random intercept. The terbinafine drug seems to bring about relief more swiftly to men and those who go to the health club less frequently.
+We've considered all the possible models including a quadratic term for `month`, combined into a full model as follows:
+$$
+\text{nail length} = treatment\beta_1 + gender\beta_2 + healthclub\beta_3 + month\beta_4 + month^2\beta_5 + id\gamma_1 + \epsilon, \epsilon_i \sim N(0, \sigma^2)
+$$
+and also considered the model with random slope as follows:
+$$
+\text{nail length} = treatment\beta_1 + gender\beta_2 + healthclub\beta_3 + month\beta_4 + month^2\beta_5 + id\gamma_1 + month\gamma_2 + \epsilon, \epsilon_i \sim N(0, \sigma^2)
+$$
+In answering these questions, I considered the trends of each individual since individuals might respond to the types of treatment differently. We saw that there was a difference in the pattern of change of lengths of the unafflicted part of the nail between subjects receiving terbinafine and itraconazole over a 12 month period. Itraconazole showed results more quickly based on the interpretation of the fixed effect of treatment 2 in the model with random slope and random intercept. Those who were on treatment 2 (itraconazole) saw .38 (treatment coefficient) mm more growth on average than those treated with terbinafine, all else constant. Among those treated with terbinafine, men have a slightly higher nail growth than women based on the positive slope coefficient. The coefficient for health club frequency is negative, with the reference group being those who go to the health club once a week or less, so there is less untreated nail growth in those who go to the health club more frequently. The final chosen model can include all of these variables with a random slope and random intercept, with time included only linearly. The terbinafine drug seems to bring about relief more swiftly to men and those who go to the health club less frequently.
+
+The final model is:
+
+$$
+\text{nail length} = treatment\beta_1 + gender\beta_2 + healthclub\beta_3 + month(\beta_4 + \gamma_2) + id\gamma_1 + \epsilon, \epsilon_i \sim N(0, \sigma^2)
+$$
 
 ```{r}
-toelmmf <- lmer(unail_len ~ as.factor(treatment) + as.factor(gender) + as.factor(healthcl_fr) + (month | id), data = toe)
+toelmmf <- lmer(unail_len ~ treatment + gender + healthcl_fr + (month | id), data = toe)
 summary(toelmmf)
 ```
-In the final model, the random residuals are less than the random intercept and random slope so the model has a good fit and captures a lot of the variability. The trends in the full model are consistent with the marginal trends. Those in treatment group 2 have a faster nail growth when all else is constant. Males have faster nail growth all else constant. And those who attend health clubs more than once a week have slower nail growth than those who go less frequently, all else constant. 
+In the final model, the random residuals are less than the random intercept and random slope so the model has a good fit and captures a lot of the variability. The trends in the full model are consistent with the marginal trends. Those in treatment group 2 (Itraconazole) have a faster nail growth than those in group 1 (treated with terbinafine) when all else is constant. Those treated with itraconazole had .40 mm more nail growth on average than those treated with terbinafine, all else constant. Males treated with terbinafine who went to a health club once a week or less have .2mm more nail growth than women in the same category on average, all else constant. And men treated with terbinafine who attend health clubs more than once a week have 1.11 less nail growth on average than those who go less frequently, all else constant. 
 
 ## Q3 (25 pts). (GEE and GLMM) 
 
@@ -291,14 +360,47 @@ Selected data from the study are in the dataset called `skin.txt` and is availab
 Your collaborator is interested in assessing the effect of treatment on the incidence of new 
 skin cancers over time. As the statistician on the project, provide an analysis of the data
 that addresses this question. Specifically, the investigator at Center=1 is interested in characterizing the distribution of risk among subjects at her center. In the following, only include the subset of subjects with Center=1 in the analysis.
+```{r}
+skin <- read.table("skin.txt", header = FALSE, sep = "")
+skin <- skin %>% rename(id = V1, center = V2, age = V3, skintype = V4, gender = V5,
+                        exposure = V6, num_new = V7, treatment = V8, year = V9)
+skin %>% head(3)
+skin1 <- skin %>%
+  filter(center == 1)
+```
 
 1. Provide an algebraic definition for a generalized linear marginal model in which the only effects are for the intercept and Year (as a continuous variable). Fit this model and provide a table which includes the estimates of the parameters in your model.
+
+$$
+\text{number of new skin cancers} = e^{X\beta} = e^{\beta_0 + year\beta_1}
+$$
+
+```{r}
+skinmod1 <- glm(num_new ~ year, family = poisson, data = skin1)
+summary(skinmod1)
+library(gtsummary)
+skinmod1 %>%
+  tbl_regression(exponentiate = TRUE)
+```
+
      
 2. Provide an algebraic definition for a generalized linear mixed model (GLMM) in which the only fixed effects are for the intercept and Year (as a continuous variable), and the only random effect is the intercept. What is being assumed about how the distribution of risk among subjects changes with time?
+
+$$
+\text{number of new skin cancers} = e^{X\beta + Z\gamma} = e^{\beta_0 + year\beta_1 + id\gamma_0 + \epsilon}
+$$
+The only random effect is an intercept for every subject ID. This model assumes that risk is distributed multivariate normal among subjects.
      
 3. Fit your chosen GLMM and provide a table from your output which includes the estimates for the parameters in your GLMM, and provide careful interpretation of the Year term.
-     
+```{r}
+skinmod2 <- glmer(num_new ~ year + (1 | id), family = poisson, data = skin1)
+summary(skinmod2)
+```
+For every additional year of follow-up after the beginning of the experiment, the average number of new skin cancer decreases by roughly 11% ($e^{-0.1083} = 0.89$) all else held constant. 
+
 4. Are the estimates for the fixed intercept terms the same or different in the GLMM compared with the marginal model fitted in question (1)? Why are they the same or different?
+
+The estimated for the fixed intercept terms are different in the GLMM compared to the marginal model fitted in question 1 because some of the randomness and variability of the intercept is now included in the random intercept model instead of just the fixed intercept. 
      
 5. Use the parameter estimates from your GLMM and your model definition to characterize the distribution of expected counts of new skin cancers among subjects at center 1 during their first year of follow-up.
 
@@ -436,10 +538,37 @@ The following table shows numbers of beetles dead after five hours exposure to g
                  killed = c(6, 13, 18, 28, 52, 53, 61, 60)))
 ```
 
-1. Let $x_i$ be `dose`, $n_i$ be the number of beetles, and $y_i$ be the number of killed. Plot the proportions $p_i = y_i/n_i$ plotted against dose $x_i$.
+1. Let $x_i$ be `dose`, $n_i$ be the number of beetles, and $y_i$ be the number of killed. Plot the proportions $p_i = y_i/n_i$ plotted against dose $x_i$. 
+```{r}
+ggplot(beetle) +
+  geom_point(aes(x = dose, y = killed/beetles))
+```
 
-2. We fit a logistic model to understand the relationship between dose and the probably of being killed. Write out the logistic model and associated log-likelihood function. 
 
+2. We fit a logistic model to understand the relationship between dose and the probability of being killed. Write out the logistic model and associated log-likelihood function. 
+
+To fit a logistic model:
+```{r}
+beetlem1 <- glm(cbind(killed, beetles-killed) ~ dose, family = binomial, data = beetle)
+summary(beetlem1)
+```
+
+$$
+\mathbb{P}(Y_i = y_i) = \binom{n_i}{y_i} p_i^{y_i} (1 - p_i)^{n_i - y_i}
+$$
+using the inverse link function:
+$$
+p_i = \frac{e^{\eta_i}}{1 + e^{\eta_i}},
+$$
+and systematic component:
+$$
+\eta_i = \beta_0 + \beta_1 x_{i1} + \cdots + \beta_{q} x_{iq} = \mathbf{x}_i^T \boldsymbol{\beta}
+$$
+
+The associated log-likelihood is:
+$$
+\ell(\boldsymbol{\beta}) = \sum_{i=1}^n \left[ y_i \cdot \mathbf{x}_i^T \boldsymbol{\beta} - n_i \log ( 1 + e^{\mathbf{x}_i^T \boldsymbol{\beta}}) + \log \binom{n_i}{y_i} \right]
+$$
 3. Derive the scores, $\mathbf{U}$, with respect to parameters in the above logistic model. (Hint there are two parameters)
 
 4. Derive the information matrix, $\mathcal{I}$ (Hint, a $2\times 2$ matrix)
